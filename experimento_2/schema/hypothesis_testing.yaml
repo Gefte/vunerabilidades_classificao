@@ -1,0 +1,126 @@
+technique: hypothesis_testing
+name: "Hypothesis Testing Prompting"
+description: >
+  Hypothesis Testing Prompting (HTP) para classificação do Tipo de Solução de
+  vulnerabilidades em containers Docker. Testa sistematicamente hipóteses para
+  cada tipo de remediação usando palavras-chave específicas, confirmando a categoria
+  onde H_true é SUPPORTED e H_false é NOT SUPPORTED.
+acronym: "HTP"
+strategy: hypothesis_testing
+
+prompt_text: |
+  You are a cybersecurity expert specialized in vulnerability remediation for Docker containers.
+
+  Vulnerability Information:
+  {input_framework}
+
+  Instructions:
+  For remediation type "{category}" (keywords: {keywords_str}), perform the following steps:
+
+  1. True Hypothesis:
+     - Assume this vulnerability requires this remediation type.
+     - Justify based on the vulnerability description, solution, and the provided keywords.
+     - Indicate whether the hypothesis is SUPPORTED or NOT SUPPORTED.
+
+  2. False Hypothesis:
+     - Assume this vulnerability does NOT require this remediation type.
+     - Justify based on the lack of evidence or contradictory characteristics.
+     - Indicate whether the hypothesis is SUPPORTED or NOT SUPPORTED.
+
+  Return the hypotheses in the following format:
+      True Hypothesis: [SUPPORTED/NOT SUPPORTED]
+      False Hypothesis: [SUPPORTED/NOT SUPPORTED]
+
+  Final Classification Decision:
+    - If the True Hypothesis is SUPPORTED and the False Hypothesis is NOT SUPPORTED, return:
+      Category: {category}
+      Explanation: [Justification for the chosen remediation type]
+    - Otherwise, return UNKNOWN:
+      Category: Unknown
+      Explanation: Unknown
+
+  {output_format}
+
+output_format: |
+  Return your classification strictly in the format below.
+  If classification is not possible, use Unknown.
+
+  Category: [VendorFix|WillNotFix|Workaround|Mitigation|Unknown]
+  Explanation: [Concise justification based on the vulnerability and solution characteristics]
+
+key_words:
+  VendorFix:
+    - update available
+    - upgrade to
+    - patch available
+    - vendor patch
+    - new version
+    - apply update
+    - security update
+    - fixed in version
+    - release notes
+    - official fix
+    - install version
+  WillNotFix:
+    - end of life
+    - eol
+    - no longer supported
+    - deprecated
+    - will not fix
+    - vendor declined
+    - accepted risk
+    - discontinued
+    - unsupported version
+    - no patch planned
+  Workaround:
+    - workaround
+    - disable the feature
+    - configuration change
+    - disable service
+    - restrict access
+    - use alternative
+    - modify configuration
+    - apply rule
+    - block at firewall
+  Mitigation:
+    - mitigate
+    - network segmentation
+    - waf
+    - web application firewall
+    - access control
+    - monitoring
+    - intrusion detection
+    - rate limiting
+    - partial protection
+    - compensating control
+  Unknown:
+    - unknown
+    - unspecified
+    - not categorized
+
+categories:
+  - name: VendorFix
+    description: >
+      An official patch, update, or new version from the vendor is available and resolves
+      the vulnerability. The remediation action is to apply the vendor-provided fix.
+  - name: WillNotFix
+    description: >
+      The vendor will not release a fix. Common reasons: software reached end-of-life,
+      component is deprecated, risk is accepted by policy, or vendor does not acknowledge.
+  - name: Workaround
+    description: >
+      No official patch exists, but a workaround is available that reduces the risk.
+      Examples: disabling a feature, configuration changes, using an alternative component.
+  - name: Mitigation
+    description: >
+      Partial mitigation is possible without fully eliminating the vulnerability.
+      Examples: network segmentation, WAF rules, access controls, enhanced monitoring.
+
+params:
+  max_iter: 4
+  quality_threshold: 1.0
+  mode: htp
+
+extraction:
+  method: csv
+  unknown_category: Unknown

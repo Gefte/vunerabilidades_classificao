@@ -1,0 +1,91 @@
+technique: progressive_hint_l3
+name: "Progressive Hint Prompting — Nível 3 (Otimizado)"
+description: >
+  PHP L3: Prompts PHP completamente redesenhados para o domínio de vulnerabilidades
+  em containers Docker (OpenVAS/Greenbone). Referência superior do E5 — representa
+  o máximo ganho possível via adaptação de prompt PHP sem fine-tuning.
+acronym: "PHP-L3"
+strategy: progressive_hint
+
+prompt_text: |
+  You are a cybersecurity expert specialized in vulnerability assessment for Docker containers.
+  You are processing structured output from OpenVAS/Greenbone vulnerability scanner reports.
+  Classify the CVSSv3 severity level of the vulnerability described below.
+
+  Vulnerability Scanner Data (OpenVAS/Greenbone):
+  {input_framework}
+
+  Important: The numeric CVSS score is intentionally excluded. Classify based on textual fields only.
+
+  CVSSv3 Severity taxonomy:
+  - Informational: CVSS 0.0 — diagnostic data, open ports, version banners, EOL detections. Not exploitable.
+  - Low: CVSS 0.1–3.9 — limited impact, local access or complex conditions required.
+  - Medium: CVSS 4.0–6.9 — moderate impact, partial unauthorized access possible.
+  - High: CVSS 7.0–8.9 — significant impact, remotely exploitable, privilege escalation.
+  - Critical: CVSS 9.0–10.0 — maximum impact, RCE, no authentication required.
+
+  Think step by step:
+  1. Identify the vulnerability type from NVT Name and Summary.
+  2. Assess impact on CIA using Vulnerability Insight and Impact.
+  3. Consider attack vector, complexity, privileges, and user interaction required.
+  4. Map to the appropriate CVSSv3 severity level.
+
+  {output_format}
+
+hint_template: |
+  You are a cybersecurity expert specialized in vulnerability assessment for Docker containers.
+  You are processing OpenVAS/Greenbone scanner data. Classify the CVSSv3 severity below.
+
+  Vulnerability Scanner Data:
+  {input_framework}
+  (Hint: The severity level is near to {previous_category}.)
+
+  We know the Answer Hints: {previous_category}. With the Answer Hints: {previous_category}, we will answer the question.
+
+  CVSSv3 Severity taxonomy:
+  - Informational: CVSS 0.0 — diagnostic data, open ports, version banners, EOL detections.
+  - Low: CVSS 0.1–3.9 — limited impact, local access or complex conditions required.
+  - Medium: CVSS 4.0–6.9 — moderate impact, partial unauthorized access possible.
+  - High: CVSS 7.0–8.9 — significant impact, remotely exploitable, privilege escalation.
+  - Critical: CVSS 9.0–10.0 — maximum impact, RCE, no authentication required.
+
+  Think step by step:
+  1. Identify the vulnerability type and its root cause.
+  2. Assess impact on confidentiality, integrity, and availability.
+  3. Use the hint as reference, but reason independently from the evidence.
+  4. Determine the final severity level.
+
+  {output_format}
+
+output_format: |
+  Return your classification strictly in the format below.
+  If classification is not possible, use Unknown.
+
+  Category: [Informational|Low|Medium|High|Critical|Unknown]
+  Explanation: [Concise justification based on the vulnerability characteristics]
+
+categories:
+  - name: Informational
+    description: >
+      CVSS 0.0. OpenVAS diagnostic findings: open ports, banners, EOL detections. Not exploitable.
+  - name: Low
+    description: >
+      CVSS 0.1–3.9. Limited exploitability. Local access or complex attack conditions.
+  - name: Medium
+    description: >
+      CVSS 4.0–6.9. Moderate risk. Partial unauthorized access under specific conditions.
+  - name: High
+    description: >
+      CVSS 7.0–8.9. Significant risk. Remotely exploitable, privilege escalation.
+  - name: Critical
+    description: >
+      CVSS 9.0–10.0. Maximum risk. RCE, no authentication required.
+
+params:
+  max_hints: 3
+  quality_threshold: 1.0
+  mode: php
+
+extraction:
+  method: csv
+  unknown_category: Unknown

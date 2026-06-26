@@ -1,0 +1,24 @@
+project:
+  name: experimento_3_1
+  description: Projeto de teste e comparacao de prompts
+  created_at: '2026-05-21T23:43:30.034426'
+  version: 1.0.0
+data:
+  input_columns:
+  - description
+  required_columns:
+  - id
+  - target
+models:
+- name: ollama_gemma2:9b
+  provider: ollama
+  temperature: 0.2
+  max_tokens: 2048
+prompt:
+  technique:
+  - progressive_hint
+  schema_dir: schema
+output:
+  format: json
+  save_metrics: true
+  save_logs: true

@@ -1,0 +1,108 @@
+technique: progressive_rectification_l0
+name: "Progressive Rectification Prompting — Nível 0 (Zero Adaptação)"
+description: >
+  PRP L0: Prompts PRP do domínio de incidentes de segurança (NIST SP 800-61r3)
+  aplicados diretamente aos dados de vulnerabilidades OpenVAS sem adaptação.
+  Simula transferência zero-shot cross-domain — hipótese: performance próxima ao aleatório.
+acronym: "PRP-L0"
+strategy: progressive_rectification
+
+prompt_text: |
+  You are a cybersecurity analyst specialized in security incident response.
+  Classify the security incident described below according to the NIST SP 800-61r3 severity taxonomy.
+
+  Incident Description:
+  {input_framework}
+
+  NIST SP 800-61r3 Severity taxonomy:
+  - Informational: No direct threat — monitoring, scanning, or information gathering.
+  - Low: Minor incident with limited scope and minimal impact.
+  - Medium: Moderate incident affecting some systems, requiring intervention.
+  - High: Significant incident with major impact — data breach, system compromise.
+  - Critical: Catastrophic incident — widespread compromise, critical infrastructure.
+
+  Think step by step:
+  1. Identify the type of security event.
+  2. Assess scope, impact, and urgency.
+  3. Map to the appropriate severity level.
+
+  {output_format}
+
+masking_template: |
+  {input_framework}
+  Replace all occurrences of the word '{subcategory}' with 'X' in the text above.
+  Ensure the substitution preserves the original context.
+
+rectification_template: |
+  You are a cybersecurity analyst specialized in security incident response.
+  Reclassify the security incident described below.
+
+  Incident Description:
+  {input_framework}
+
+  Note: The answer is probably NOT one of these categories: {rejected_category}.
+  Reconsider carefully and choose a different severity level if appropriate.
+
+  NIST SP 800-61r3 Severity taxonomy:
+  - Informational: No direct threat — monitoring, scanning, or information gathering.
+  - Low: Minor incident with limited scope and minimal impact.
+  - Medium: Moderate incident affecting some systems, requiring intervention.
+  - High: Significant incident with major impact — data breach, system compromise.
+  - Critical: Catastrophic incident — widespread compromise, critical infrastructure.
+
+  {output_format}
+
+output_format: |
+  Return your classification strictly in the format below.
+  If classification is not possible, use Unknown.
+
+  Category: [Informational|Low|Medium|High|Critical|Unknown]
+  Explanation: [Concise justification based on the incident characteristics]
+
+key_words:
+  Informational:
+    - information gathering
+    - reconnaissance
+    - scanning
+    - monitoring
+    - passive
+  Low:
+    - minor incident
+    - limited scope
+    - minimal impact
+  Medium:
+    - moderate incident
+    - intervention required
+    - some data affected
+  High:
+    - data breach
+    - system compromise
+    - major impact
+  Critical:
+    - catastrophic
+    - widespread
+    - critical infrastructure
+  Unknown:
+    - unknown
+    - unspecified
+
+categories:
+  - name: Informational
+    description: No direct threat. Information gathering or scanning activity.
+  - name: Low
+    description: Minor incident with limited scope. Minimal operational impact.
+  - name: Medium
+    description: Moderate incident affecting some systems. Requires prompt intervention.
+  - name: High
+    description: Significant incident with major impact. Data breach or system compromise.
+  - name: Critical
+    description: Catastrophic incident. Widespread compromise or critical infrastructure affected.
+
+params:
+  max_iter: 3
+  quality_threshold: 1.0
+  mode: prp
+
+extraction:
+  method: csv
+  unknown_category: Unknown

@@ -1,0 +1,145 @@
+technique: hypothesis_testing_l3
+name: "Hypothesis Testing Prompting — Nível 3 (Otimizado)"
+description: >
+  HTP L3: Prompts HTP completamente redesenhados para o domínio de vulnerabilidades
+  em containers Docker (OpenVAS/Greenbone). Referência superior do E5 — representa
+  o máximo ganho possível via adaptação de prompt HTP sem fine-tuning.
+acronym: "HTP-L3"
+strategy: hypothesis_testing
+
+prompt_text: |
+  You are a cybersecurity expert specialized in vulnerability assessment for Docker containers.
+  You are processing OpenVAS/Greenbone scanner data.
+
+  Vulnerability Scanner Data (OpenVAS/Greenbone):
+  {input_framework}
+
+  Instructions:
+  For CVSSv3 severity category "{category}" (keywords: {keywords_str}), perform the following steps:
+
+  Note: The numeric CVSS score is excluded. Base your analysis on NVT Name, Summary,
+  Vulnerability Insight, and Impact fields from the OpenVAS scanner report.
+
+  1. True Hypothesis:
+     - Assume the vulnerability belongs to this CVSSv3 severity level.
+     - Justify using the vulnerability description and the provided keywords.
+     - Indicate whether the hypothesis is SUPPORTED or NOT SUPPORTED.
+
+  2. False Hypothesis:
+     - Assume the vulnerability does NOT belong to this CVSSv3 severity level.
+     - Justify based on the lack of evidence or contradictory characteristics.
+     - Indicate whether the hypothesis is SUPPORTED or NOT SUPPORTED.
+
+  Return the hypotheses in the following format:
+      True Hypothesis: [SUPPORTED/NOT SUPPORTED]
+      False Hypothesis: [SUPPORTED/NOT SUPPORTED]
+
+  Final Classification Decision:
+    - If the True Hypothesis is SUPPORTED and the False Hypothesis is NOT SUPPORTED:
+      Category: {category}
+      Explanation: [Justification for the chosen severity level]
+    - Otherwise:
+      Category: Unknown
+      Explanation: Unknown
+
+  {output_format}
+
+output_format: |
+  Return your classification strictly in the format below.
+  If classification is not possible, use Unknown.
+
+  Category: [Informational|Low|Medium|High|Critical|Unknown]
+  Explanation: [Concise justification based on the vulnerability characteristics]
+
+key_words:
+  Informational:
+    - open port
+    - service banner
+    - version detected
+    - fingerprint
+    - host alive
+    - ssl certificate
+    - informational
+    - diagnostic
+    - metadata
+    - scan result
+    - end of life
+    - eol detection
+    - software version
+    - port scan
+    - banner grabbing
+  Low:
+    - local access required
+    - complex conditions
+    - limited impact
+    - low risk
+    - minimal damage
+    - difficult to exploit
+    - requires authentication
+    - user interaction required
+    - physical access
+    - low cvss
+  Medium:
+    - partial compromise
+    - moderate impact
+    - unauthorized access
+    - credential exposure
+    - cross-site scripting
+    - xss
+    - csrf
+    - information disclosure
+    - requires privileges
+    - session hijacking
+  High:
+    - privilege escalation
+    - data breach
+    - service disruption
+    - exploitable remotely
+    - authentication bypass
+    - sql injection
+    - high cvss
+    - remote exploit
+    - command injection
+    - directory traversal
+  Critical:
+    - remote code execution
+    - rce
+    - full system compromise
+    - no authentication required
+    - no user interaction
+    - unauthenticated
+    - arbitrary code
+    - complete compromise
+    - critical cvss
+    - zero-day
+    - wormable
+  Unknown:
+    - unknown
+    - unspecified
+    - not categorized
+
+categories:
+  - name: Informational
+    description: >
+      CVSS 0.0. OpenVAS diagnostic findings: open ports, banners, EOL detections. Not exploitable.
+  - name: Low
+    description: >
+      CVSS 0.1–3.9. Limited exploitability. Local access or complex attack conditions.
+  - name: Medium
+    description: >
+      CVSS 4.0–6.9. Moderate risk. Partial unauthorized access under specific conditions.
+  - name: High
+    description: >
+      CVSS 7.0–8.9. Significant risk. Remotely exploitable, privilege escalation.
+  - name: Critical
+    description: >
+      CVSS 9.0–10.0. Maximum risk. RCE, no authentication required.
+
+params:
+  max_iter: 5
+  quality_threshold: 1.0
+  mode: htp
+
+extraction:
+  method: csv
+  unknown_category: Unknown

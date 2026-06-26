@@ -1,0 +1,94 @@
+id,informacoes_das_colunas,categoria,explicacao,categoria_testada,rouge,iteracao,technique_used
+306b7c0f-b614-4fe8-93a0-7ab5645781eb,"NVT Name: PHP End of Life (EOL) Detection - Linux / Summary: The PHP version on the remote host has reached the end of life
+  (EOL) and should not be used anymore. / Vulnerability Insight: Each release branch of PHP is fully supported for two years from
+  its initial stable release. During this period, bugs and security issues that have been reported
+  are fixed and are released in regular point releases.
+
+  After this two year period of active support, each branch is then supported for an additional year
+  for critical security issues only. Releases during this period are made on an as-needed basis:
+  there may be multiple point releases, or none, depending on the number of reports.
+
+  Once the three years of support are completed, the branch reaches its end of life and is no longer
+  supported. / Impact: An EOL version of PHP is not receiving any security updates from
+  the vendor. Unfixed security vulnerabilities might be leveraged by an attacker to compromise the
+  security of this host.",Low,"The vulnerability belongs to this severity level. Therefore, the classification is ""Low"".",Low,1.0,2,hypothesis_testing
+6929e48a-9ac4-47e2-9b8f-91a4db3b05b9,"NVT Name: PHP < 5.5.37, 5.6.x < 5.6.23 Multiple Vulnerabilities (Aug 2016) - Linux / Summary: PHP is prone to multiple vulnerabilities. / Vulnerability Insight: The following flaws exist:
+
+  - The 'spl_array.c' in the SPL extension improperly interacts with the unserialize implementation
+  and garbage collection.
+
+  - Integer overflow in the 'SplFileObject::fread' function in 'spl_directory.c' in the SPL
+  extension. / Impact: Successfully exploiting these issues allow remote attackers to
+  cause a denial of service (use-after-free and application crash) or possibly execute arbitrary
+  code or possibly have unspecified other impact via a large integer argument.",Low,[Justification for the chosen severity level],Low,1.0,2,hypothesis_testing
+54ae23cd-fbc7-4f8a-9d6c-60a6462d3030,"NVT Name: PHP Multiple Vulnerabilities (Feb 2019) - Linux / Summary: PHP is prone to multiple vulnerabilities. / Vulnerability Insight: The following flaws exist:
+
+  - Fixed bug #77269 (efree() on uninitialized Heap data in imagescale leads to use-after-free).
+  (CVE-2016-10166)
+
+  - Fixed bug #77270 (imagecolormatch Out Of Bounds Write on Heap). (CVE-2019-6977)
+
+  - Fixed bug #77370 (Buffer overflow on mb regex functions - fetch_token). (CVE-2019-9023)
+
+  - Fixed bug #77371 (heap buffer overflow in mb regex functions - compile_string_node).
+  (CVE-2019-9023)
+
+  - Fixed bug #77381 (heap buffer overflow in multibyte match_at). (CVE-2019-9023)
+
+  - Fixed bug #77382 (heap buffer overflow due to incorrect length in expand_case_fold_string).
+  (CVE-2019-9023)
+
+  - Fixed bug #77385 (buffer overflow in fetch_token). (CVE-2019-9023)
+
+  - Fixed bug #77394 (Buffer overflow in multibyte case folding - unicode). (CVE-2019-9023)
+
+  - Fixed bug #77418 (Heap overflow in utf32be_mbc_to_code). (CVE-2019-9023)
+
+  - Fixed bug #77247 (heap buffer overflow in phar_detect_phar_fname_ext). (CVE-2019-9021)
+
+  - Fixed bug #77242 (heap out of bounds read in xmlrpc_decode()). (CVE-2019-9020)
+
+  - Fixed bug #77380 (Global out of bounds read in xmlrpc base64 code). (CVE-2019-9024) / Impact: [ausente]",Critical,[Justification for the chosen severity level],Critical,1.0,5,hypothesis_testing
+8e61207d-677c-42b4-aaf9-4f92666a0239,"NVT Name: PHP < 8.1.29, 8.2.x < 8.2.20, 8.3.x < 8.3.8 Multiple Vulnerabilities - Linux / Summary: PHP is prone to multiple vulnerabilities. / Vulnerability Insight: The following vulnerabilities exist:
+
+  - CVE-2024-4577: Argument injection in PHP-CGI (bypass of CVE-2012-1823)
+
+  - CVE-2024-5458: Filter bypass in filter_var FILTER_VALIDATE_URL
+
+  - CVE-2024-5585: Bypass of CVE-2024-1874
+
+  Note: As of 06/2024 the CVEs CVE-2024-4577 and CVE-2024-5585 are known to be exploitable on
+  Windows systems only. / Impact: [ausente]",Medium,[Justification for the chosen severity level],Medium,1.0,3,hypothesis_testing
+79158e9c-459b-4005-a4a8-3442280c5fbe,"NVT Name: PHP < 5.6.29, 7.0.x < 7.0.14 DoS Vulnerability - Linux / Summary: PHP is prone to a denial of service (DoS) vulnerability. / Vulnerability Insight: The php_wddx_push_element function in ext/wddx/wddx.c allows
+  remote attackers to cause a denial of service (out-of-bounds read and memory corruption) or
+  possibly have unspecified other impact via an empty boolean element in a wddxPacket XML
+  document. / Impact: [ausente]",Critical,"The PHP vulnerability is classified as critical, meaning that it poses a significant risk to an organization. This classification is important because it indicates that the vulnerability has a high impact on the organization's operations and reputation.",Critical,1.0,5,hypothesis_testing
+95622ad0-e9a0-4a8c-9fa8-bef97849d038,"NVT Name: PHP < 5.6.7 DoS Vulnerability - Linux / Summary: PHP is prone to a denial of service (DoS) vulnerability. / Vulnerability Insight: The flaw is due to 'type confusion' issues in
+  'ext/soap/php_encoding.c', 'ext/soap/php_http.c', and 'ext/soap/soap.c' scripts. / Impact: Successfully exploiting this issue allow remote attackers to
+  cause a denial of service.",Low,[Justification for the chosen severity level],Low,1.0,2,hypothesis_testing
+a99c2c04-2dd0-4565-ab66-1542fab74c0a,"NVT Name: PHP < 7.4.33, 8.0.x < 8.0.25, 8.1.x < 8.1.12 Security Update - Linux / Summary: PHP is prone to multiple vulnerabilities. / Vulnerability Insight: The following vulnerabilities exist:
+
+  - CVE-2022-31630: OOB read due to insufficient input validation in imageloadfont()
+
+  - CVE-2022-37454: Buffer overflow in hash_update() on long parameter / Impact: [ausente]",Low,[Justification for the chosen severity level],Low,1.0,2,hypothesis_testing
+edcd277e-3044-42f1-886a-94311e9afac6,"NVT Name: PHP <= 5.6.27 / 7.0.x <= 7.0.12 DoS Vulnerability / Summary: PHP is prone to a denial of service (DoS) vulnerability. / Vulnerability Insight: PHP mishandles property modification during __wakeup
+  processing, which allows remote attackers to cause a denial of service or possibly have
+  unspecified other impact via crafted serialized data, as demonstrated by Exception::__toString
+  with DateInterval::__wakeup. / Impact: [ausente]",Low,[Justification for the chosen severity level],Low,1.0,2,hypothesis_testing
+bf4b9ba1-6465-44f2-a996-7a6b14740375,"NVT Name: PHP <= 7.1.5 Multiple DoS Vulnerabilities / Summary: PHP is prone to multiple denial of service (DoS)
+  vulnerabilities. / Vulnerability Insight: The following flaws exist:
+
+  - CVE-2017-8923: The zend_string_extend function in Zend/zend_string.h does not prevent changes to
+  string objects that result in a negative length, which allows remote attackers to cause a denial
+  of service (application crash) or possibly have unspecified other impact by leveraging a script's
+  use of .= with a long string.
+
+  - CVE-2017-9119: The i_zval_ptr_dtor function in Zend/zend_variables.h allows attackers to cause a
+  denial of service (memory consumption and application crash) or possibly have unspecified other
+  impact by triggering crafted operations on array data structures. / Impact: [ausente]",Medium,[Justification for the chosen severity level],Medium,1.0,3,hypothesis_testing
+d4762dbe-fb80-46f3-bb53-9357016c8fb7,"NVT Name: PHP < 8.0.30, 8.1.x < 8.1.22, 8.2.x < 8.2.9 Security Update - Linux / Summary: PHP is prone to multiple vulnerabilities. / Vulnerability Insight: The following flaws exist:
+
+  - CVE-2023-3823: Fixed bug GHSA-3qrf-m4j2-pcrr (Security issue with external entity loading in XML
+  without enabling it)
+
+  - CVE-2023-3824: Fixed bug GHSA-jqcx-ccgc-xwhv (Buffer mismanagement in phar_dir_read()) / Impact: [ausente]",Low,[Justification for the chosen severity level],Low,1.0,2,hypothesis_testing

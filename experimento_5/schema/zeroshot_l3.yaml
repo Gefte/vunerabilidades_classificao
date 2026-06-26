@@ -1,0 +1,76 @@
+technique: zeroshot_l3
+name: "Zero-Shot Learning — Nível 3 (Otimizado)"
+description: >
+  ZSL L3: Prompts completamente redesenhados e otimizados para o domínio de
+  vulnerabilidades em containers Docker (OpenVAS/Greenbone). Referência superior
+  do E5 — representa o máximo ganho possível via adaptação de prompt sem fine-tuning.
+  Mesma qualidade do E1 com explicitação do nível de adaptação.
+acronym: "ZSL-L3"
+strategy: zeroshot
+
+prompt_text: |
+  You are a cybersecurity expert specialized in vulnerability assessment for Docker containers.
+  You are processing structured output from OpenVAS/Greenbone vulnerability scanner reports.
+  Classify the CVSSv3 severity level of the vulnerability based on the textual fields below.
+
+  Vulnerability Scanner Data (OpenVAS/Greenbone — Docker Hub scan):
+  {input_framework}
+
+  Important: The numeric CVSS score is intentionally excluded. Infer severity from the textual
+  description of the vulnerability type, its root cause, impact, and exploitability conditions.
+
+  CVSSv3 Severity taxonomy:
+  - Informational: CVSS 0.0 — scanner diagnostic data only (open ports, service banners, version
+    fingerprints, EOL detections, SSL certificate metadata). No direct security risk.
+  - Low: CVSS 0.1–3.9 — limited impact. Exploitation requires local access, physical presence,
+    or complex multi-step attack conditions. Minimal damage potential.
+  - Medium: CVSS 4.0–6.9 — moderate impact. May allow partial unauthorized access, credential
+    exposure, XSS, CSRF, or information disclosure under specific conditions.
+  - High: CVSS 7.0–8.9 — significant impact. Data breach, privilege escalation, authentication
+    bypass, SQL injection, command injection. Often remotely exploitable with low complexity.
+  - Critical: CVSS 9.0–10.0 — maximum impact. Remote code execution, full system compromise,
+    arbitrary code execution with no authentication or user interaction required.
+
+  Think step by step:
+  1. Identify the vulnerability type and its root cause from the NVT Name and Summary.
+  2. Assess the potential impact on confidentiality, integrity, and availability using Vulnerability Insight and Impact.
+  3. Consider the exploitability: attack vector (network/local/physical), complexity, privileges, user interaction.
+  4. Map to the appropriate CVSSv3 severity level using the taxonomy above.
+
+  {output_format}
+
+output_format: |
+  Return your classification strictly in the format below.
+  If classification is not possible, use Unknown.
+
+  Category: [Informational|Low|Medium|High|Critical|Unknown]
+  Explanation: [Concise justification based on the vulnerability characteristics]
+
+categories:
+  - name: Informational
+    description: >
+      CVSS 0.0. OpenVAS diagnostic findings: open ports, service banners, version fingerprints,
+      SSL certificate info, EOL detections. Not an exploitable vulnerability.
+  - name: Low
+    description: >
+      CVSS 0.1–3.9. Limited exploitability. Requires local access, physical presence,
+      or highly complex conditions. Minimal damage if exploited.
+  - name: Medium
+    description: >
+      CVSS 4.0–6.9. Moderate risk. May allow partial unauthorized access, credential
+      exposure, XSS, CSRF, or information disclosure under specific conditions.
+  - name: High
+    description: >
+      CVSS 7.0–8.9. Significant risk. Data breach, privilege escalation, authentication
+      bypass, SQL injection. Often exploitable remotely with low complexity.
+  - name: Critical
+    description: >
+      CVSS 9.0–10.0. Maximum risk. Remote code execution, full system compromise,
+      no authentication or user interaction required.
+
+params:
+  mode: zsl
+
+extraction:
+  method: csv
+  unknown_category: Unknown

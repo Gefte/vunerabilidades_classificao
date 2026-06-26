@@ -1,0 +1,66 @@
+technique: zeroshot_l0
+name: "Zero-Shot Learning — Nível 0 (Zero Adaptação)"
+description: >
+  ZSL L0: Prompts do domínio de incidentes de segurança (NIST SP 800-61r3) aplicados
+  diretamente aos dados de vulnerabilidades OpenVAS sem nenhuma adaptação. Simula a
+  transferência zero-shot cross-domain — hipótese: performance próxima ao aleatório.
+acronym: "ZSL-L0"
+strategy: zeroshot
+
+prompt_text: |
+  You are a cybersecurity analyst specialized in security incident response.
+  Classify the security incident described below according to the NIST SP 800-61r3 incident category taxonomy.
+
+  Incident Description:
+  {input_framework}
+
+  NIST SP 800-61r3 Severity taxonomy:
+  - Informational: No direct threat — monitoring, scanning, or information gathering.
+  - Low: Minor incident with limited scope and minimal impact on operations.
+  - Medium: Moderate incident affecting some systems or users, requiring intervention.
+  - High: Significant incident with major impact — data breach, system compromise.
+  - Critical: Catastrophic incident — widespread compromise, critical infrastructure affected.
+
+  Think step by step:
+  1. Identify the type of security event described.
+  2. Assess the scope and potential impact on the organization.
+  3. Consider the urgency of response required.
+  4. Map to the appropriate NIST SP 800-61r3 severity level.
+
+  {output_format}
+
+output_format: |
+  Return your classification strictly in the format below.
+  If classification is not possible, use Unknown.
+
+  Category: [Informational|Low|Medium|High|Critical|Unknown]
+  Explanation: [Concise justification based on the incident characteristics]
+
+categories:
+  - name: Informational
+    description: >
+      No direct threat. Information gathering, reconnaissance, or scanning activity
+      detected. No immediate action required beyond logging.
+  - name: Low
+    description: >
+      Minor incident with limited scope. Affects few systems, minimal operational impact.
+      Standard response procedures apply.
+  - name: Medium
+    description: >
+      Moderate incident affecting some systems or data. Requires prompt intervention
+      and escalation to security team.
+  - name: High
+    description: >
+      Significant incident with major impact. Data breach, unauthorized access, or
+      system compromise. Immediate response and incident command required.
+  - name: Critical
+    description: >
+      Catastrophic incident. Widespread compromise, critical infrastructure affected,
+      or major data exfiltration. Executive escalation and crisis response required.
+
+params:
+  mode: zsl
+
+extraction:
+  method: csv
+  unknown_category: Unknown

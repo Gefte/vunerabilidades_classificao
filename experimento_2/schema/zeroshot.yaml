@@ -1,0 +1,63 @@
+technique: zeroshot
+name: "Zero-Shot Learning"
+description: >
+  Zero-Shot Learning (ZSL) para classificação do Tipo de Solução de vulnerabilidades
+  em containers Docker (OpenVAS/Greenbone). Classificação direta sem exemplos — dado
+  o nome da vulnerabilidade, resumo, solução recomendada e software afetado, determina
+  a ação de remediação necessária. Serve como linha de base do E2.
+acronym: "ZSL"
+strategy: zeroshot
+
+prompt_text: |
+  You are a cybersecurity expert specialized in vulnerability remediation for Docker containers.
+  Classify the remediation action required for the vulnerability described below.
+
+  Vulnerability Information:
+  {input_framework}
+
+  Remediation taxonomy (OpenVAS Solution Types):
+  - VendorFix: A patch or update from the vendor is available. Apply the official fix.
+  - WillNotFix: The vendor will not release a fix (EOL software, deprecated component, accepted risk).
+  - Workaround: No official patch, but a workaround is available (configuration change, firewall rule, disabling a feature).
+  - Mitigation: Partial mitigation is possible without fully eliminating the vulnerability (network segmentation, WAF, monitoring).
+
+  Think step by step:
+  1. Identify the vulnerability type and the affected software/component.
+  2. Check whether the solution field describes an available patch or update.
+  3. If no patch exists, determine if a workaround or mitigation is described.
+  4. Consider EOL/deprecated status when deciding between VendorFix and WillNotFix.
+  5. Map to the most appropriate remediation type.
+
+  {output_format}
+
+output_format: |
+  Return your classification strictly in the format below.
+  If classification is not possible, use Unknown.
+
+  Category: [VendorFix|WillNotFix|Workaround|Mitigation|Unknown]
+  Explanation: [Concise justification based on the vulnerability and solution characteristics]
+
+categories:
+  - name: VendorFix
+    description: >
+      An official patch, update, or new version from the vendor is available and resolves
+      the vulnerability. The remediation action is to apply the vendor-provided fix.
+  - name: WillNotFix
+    description: >
+      The vendor will not release a fix. Common reasons: software reached end-of-life,
+      component is deprecated, risk is accepted by policy, or vendor does not acknowledge the issue.
+  - name: Workaround
+    description: >
+      No official patch exists, but a workaround is available that reduces the risk.
+      Examples: disabling a feature, applying configuration changes, using an alternative component.
+  - name: Mitigation
+    description: >
+      Partial mitigation is possible without fully eliminating the vulnerability.
+      Examples: network segmentation, WAF rules, access controls, enhanced monitoring.
+
+params:
+  mode: zsl
+
+extraction:
+  method: csv
+  unknown_category: Unknown

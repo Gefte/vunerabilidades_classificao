@@ -1,0 +1,129 @@
+technique: progressive_rectification
+name: "Progressive Rectification Prompting"
+description: >
+  Progressive Rectification Prompting (PRP) para classificação do Tipo de Solução
+  de vulnerabilidades em containers Docker. Mascara progressivamente palavras-chave
+  da categoria escolhida e força reclassificação, quebrando o viés de ancoragem
+  (anchor bias) do modelo na primeira resposta de remediação.
+acronym: "PRP"
+strategy: progressive_rectification
+
+prompt_text: |
+  You are a cybersecurity expert specialized in vulnerability remediation for Docker containers.
+  Classify the remediation action required for the vulnerability described below.
+
+  Vulnerability Information:
+  {input_framework}
+
+  Remediation taxonomy (OpenVAS Solution Types):
+  - VendorFix: A patch or update from the vendor is available.
+  - WillNotFix: The vendor will not release a fix (EOL, deprecated, accepted risk).
+  - Workaround: No patch, but a configuration or architectural workaround is available.
+  - Mitigation: Partial mitigation only (WAF, network controls, monitoring).
+
+  Think step by step:
+  1. Identify the vulnerability type and the affected software/component.
+  2. Check whether the solution describes an available patch or update.
+  3. If no patch exists, determine if a workaround or mitigation is described.
+  4. Map to the most appropriate remediation type.
+
+  {output_format}
+
+masking_template: |
+  {input_framework}
+  Replace all occurrences of the word '{subcategory}' with 'X' in the vulnerability text above.
+  Ensure the substitution preserves the original context and sentence structure.
+
+rectification_template: |
+  You are a cybersecurity expert specialized in vulnerability remediation for Docker containers.
+  Reclassify the remediation action for the vulnerability described below.
+
+  Vulnerability Information:
+  {input_framework}
+
+  Note: The answer is probably NOT one of these remediation types: {rejected_category}.
+  Reconsider your analysis carefully and choose a different remediation type if appropriate.
+
+  Remediation taxonomy (OpenVAS Solution Types):
+  - VendorFix: A patch or update from the vendor is available.
+  - WillNotFix: The vendor will not release a fix (EOL, deprecated, accepted risk).
+  - Workaround: No patch, but a configuration or architectural workaround is available.
+  - Mitigation: Partial mitigation only (WAF, network controls, monitoring).
+
+  Think step by step:
+  1. Identify the vulnerability type and the affected software/component.
+  2. Check whether the solution describes an available patch or update.
+  3. If no patch exists, determine if a workaround or mitigation is described.
+  4. Avoid the rejected remediation types listed above.
+
+  {output_format}
+
+output_format: |
+  Return your classification strictly in the format below.
+  If classification is not possible, use Unknown.
+
+  Category: [VendorFix|WillNotFix|Workaround|Mitigation|Unknown]
+  Explanation: [Concise justification based on the vulnerability and solution characteristics]
+
+key_words:
+  VendorFix:
+    - update available
+    - upgrade to
+    - patch available
+    - new version
+    - apply update
+    - security update
+    - fixed in version
+    - official fix
+  WillNotFix:
+    - end of life
+    - eol
+    - no longer supported
+    - deprecated
+    - will not fix
+    - discontinued
+    - unsupported version
+  Workaround:
+    - workaround
+    - disable the feature
+    - configuration change
+    - disable service
+    - use alternative
+    - modify configuration
+  Mitigation:
+    - mitigate
+    - network segmentation
+    - waf
+    - access control
+    - monitoring
+    - compensating control
+  Unknown:
+    - unknown
+    - unspecified
+
+categories:
+  - name: VendorFix
+    description: >
+      An official patch, update, or new version from the vendor is available and resolves
+      the vulnerability. The remediation action is to apply the vendor-provided fix.
+  - name: WillNotFix
+    description: >
+      The vendor will not release a fix. Common reasons: software reached end-of-life,
+      component is deprecated, risk is accepted by policy, or vendor does not acknowledge.
+  - name: Workaround
+    description: >
+      No official patch exists, but a workaround is available that reduces the risk.
+      Examples: disabling a feature, configuration changes, using an alternative component.
+  - name: Mitigation
+    description: >
+      Partial mitigation is possible without fully eliminating the vulnerability.
+      Examples: network segmentation, WAF rules, access controls, enhanced monitoring.
+
+params:
+  max_iter: 3
+  quality_threshold: 1.0
+  mode: prp
+
+extraction:
+  method: csv
+  unknown_category: Unknown

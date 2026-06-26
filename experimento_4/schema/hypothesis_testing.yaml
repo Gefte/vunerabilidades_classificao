@@ -1,0 +1,124 @@
+technique: hypothesis_testing
+name: "Hypothesis Testing Prompting — Container-Aware Priority"
+description: >
+  Hypothesis Testing Prompting (HTP) para classificação de Priorização Container-Aware
+  (E4). Testa sistematicamente hipóteses para cada categoria da taxonomia Container-Aware
+  usando palavras-chave e critérios numéricos (CVSS, QoD). Confirmação onde H_true é
+  SUPPORTED e H_false é NOT SUPPORTED.
+acronym: "HTP"
+strategy: hypothesis_testing
+
+prompt_text: |
+  You are a DevSecOps expert specialized in container security and vulnerability prioritization.
+
+  Vulnerability Information:
+  {input_framework}
+
+  Instructions:
+  For priority category "{category}" (criteria: {keywords_str}), perform the following steps:
+
+  1. True Hypothesis:
+     - Assume this vulnerability has this priority level in Docker container context.
+     - Verify whether the CVSS score, Solution Type, Port Protocol, and QoD meet the criteria.
+     - Indicate whether the hypothesis is SUPPORTED or NOT SUPPORTED.
+
+  2. False Hypothesis:
+     - Assume this vulnerability does NOT have this priority level.
+     - Justify based on criteria not being met or contradictory data.
+     - Indicate whether the hypothesis is SUPPORTED or NOT SUPPORTED.
+
+  Return the hypotheses in the following format:
+      True Hypothesis: [SUPPORTED/NOT SUPPORTED]
+      False Hypothesis: [SUPPORTED/NOT SUPPORTED]
+
+  Final Classification Decision:
+    - If the True Hypothesis is SUPPORTED and the False Hypothesis is NOT SUPPORTED, return:
+      Category: {category}
+      Explanation: [Justification referencing CVSS, Solution Type, Port Protocol, QoD]
+    - Otherwise, return UNKNOWN:
+      Category: Unknown
+      Explanation: Unknown
+
+  {output_format}
+
+output_format: |
+  Return your classification strictly in the format below.
+  If classification is not possible, use Unknown.
+
+  Category: [Crítico-Container|Alto-Remediável|Médio-Monitorar|Baixo-Aceitar|Unknown]
+  Explanation: [Concise justification referencing CVSS, Solution Type, Port Protocol, and QoD]
+
+key_words:
+  Crítico-Container:
+    - cvss 9
+    - cvss 10
+    - critical cvss
+    - willnotfix
+    - will not fix
+    - no patch
+    - tcp
+    - port protocol tcp
+    - unpatched critical
+    - no vendor fix
+  Alto-Remediável:
+    - cvss 7
+    - cvss 8
+    - high cvss
+    - vendorfix
+    - vendor fix
+    - patch available
+    - update available
+    - official fix
+    - security update
+  Médio-Monitorar:
+    - cvss 4
+    - cvss 5
+    - cvss 6
+    - medium cvss
+    - requires conditions
+    - specific conditions
+    - partial access
+    - workaround
+    - mitigation available
+    - moderate impact
+  Baixo-Aceitar:
+    - cvss 0
+    - cvss 1
+    - cvss 2
+    - cvss 3
+    - low cvss
+    - qod low
+    - low confidence
+    - informational
+    - minimal risk
+    - scanner uncertainty
+  Unknown:
+    - unknown
+    - unspecified
+    - insufficient data
+
+categories:
+  - name: Crítico-Container
+    description: >
+      CVSS ≥ 9.0 AND Solution Type = WillNotFix AND Port Protocol = tcp.
+      Unpatched critical vulnerability exposed on TCP in the container network.
+  - name: Alto-Remediável
+    description: >
+      CVSS ≥ 7.0 AND Solution Type = VendorFix.
+      High or critical severity with a vendor-provided patch available.
+  - name: Médio-Monitorar
+    description: >
+      CVSS ∈ [4.0, 7.0) OR exploitation requires specific conditions.
+      Medium risk or conditional exploitability — monitor and schedule.
+  - name: Baixo-Aceitar
+    description: >
+      CVSS < 4.0 OR QoD < 50. Low risk or low detection confidence — accept or defer.
+
+params:
+  max_iter: 4
+  quality_threshold: 1.0
+  mode: htp
+
+extraction:
+  method: csv
+  unknown_category: Unknown

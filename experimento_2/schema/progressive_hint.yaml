@@ -1,0 +1,90 @@
+technique: progressive_hint
+name: "Progressive Hint Prompting"
+description: >
+  Progressive Hint Prompting (PHP) para classificação do Tipo de Solução de
+  vulnerabilidades em containers Docker. Gera uma resposta base e itera usando
+  respostas anteriores como dicas progressivas, convergindo quando duas respostas
+  consecutivas são iguais. Testa se o raciocínio iterativo melhora a triagem de remediação.
+acronym: "PHP"
+strategy: progressive_hint
+
+prompt_text: |
+  You are a cybersecurity expert specialized in vulnerability remediation for Docker containers.
+  Classify the remediation action required for the vulnerability described below.
+
+  Vulnerability Information:
+  {input_framework}
+
+  Remediation taxonomy (OpenVAS Solution Types):
+  - VendorFix: A patch or update from the vendor is available.
+  - WillNotFix: The vendor will not release a fix (EOL, deprecated, accepted risk).
+  - Workaround: No patch, but a configuration or architectural workaround is available.
+  - Mitigation: Partial mitigation only (WAF, network controls, monitoring).
+
+  Think step by step:
+  1. Identify the vulnerability type and the affected software/component.
+  2. Check whether the solution describes an available patch or update.
+  3. If no patch exists, determine if a workaround or mitigation is described.
+  4. Consider EOL/deprecated status when choosing between VendorFix and WillNotFix.
+  5. Map to the most appropriate remediation type.
+
+  {output_format}
+
+hint_template: |
+  You are a cybersecurity expert specialized in vulnerability remediation for Docker containers.
+  Classify the remediation action required for the vulnerability described below.
+
+  Vulnerability Information:
+  {input_framework}
+  (Hint: The remediation type is near to {previous_category}.)
+
+  We know the Answer Hints: {previous_category}. With the Answer Hints: {previous_category}, we will answer the question.
+
+  Remediation taxonomy (OpenVAS Solution Types):
+  - VendorFix: A patch or update from the vendor is available.
+  - WillNotFix: The vendor will not release a fix (EOL, deprecated, accepted risk).
+  - Workaround: No patch, but a configuration or architectural workaround is available.
+  - Mitigation: Partial mitigation only (WAF, network controls, monitoring).
+
+  Think step by step:
+  1. Identify the vulnerability type and the affected software/component.
+  2. Check whether the solution describes an available patch or update.
+  3. If no patch exists, determine if a workaround or mitigation is described.
+  4. Use the hint as reference, but reason independently from the evidence.
+  5. Map to the most appropriate remediation type.
+
+  {output_format}
+
+output_format: |
+  Return your classification strictly in the format below.
+  If classification is not possible, use Unknown.
+
+  Category: [VendorFix|WillNotFix|Workaround|Mitigation|Unknown]
+  Explanation: [Concise justification based on the vulnerability and solution characteristics]
+
+categories:
+  - name: VendorFix
+    description: >
+      An official patch, update, or new version from the vendor is available and resolves
+      the vulnerability. The remediation action is to apply the vendor-provided fix.
+  - name: WillNotFix
+    description: >
+      The vendor will not release a fix. Common reasons: software reached end-of-life,
+      component is deprecated, risk is accepted by policy, or vendor does not acknowledge.
+  - name: Workaround
+    description: >
+      No official patch exists, but a workaround is available that reduces the risk.
+      Examples: disabling a feature, configuration changes, using an alternative component.
+  - name: Mitigation
+    description: >
+      Partial mitigation is possible without fully eliminating the vulnerability.
+      Examples: network segmentation, WAF rules, access controls, enhanced monitoring.
+
+params:
+  max_hints: 3
+  quality_threshold: 1.0
+  mode: php
+
+extraction:
+  method: csv
+  unknown_category: Unknown

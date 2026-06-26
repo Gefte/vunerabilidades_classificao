@@ -1,0 +1,51 @@
+project:
+  name: experimento_5
+  description: >
+    E5 — Transferência Cross-Domain (Generalização do Framework): quantifica o
+    esforço de adaptação do FrameworkPE ao domínio de vulnerabilidades medindo
+    o ganho incremental por nível de adaptação dos prompts (L0–L3). L0 usa
+    prompts do domínio de incidentes diretamente; L3 usa prompts redesenhados
+    especificamente para vulnerabilidades. Mesmo task que E1 (Severity).
+  created_at: '2026-05-18T23:13:18.684165'
+  version: 1.0.0
+data:
+  input_columns:
+  - NVT Name
+  - Summary
+  - Vulnerability Insight
+  - Impact
+  required_columns:
+  - id
+  - target
+models:
+- name: "qwen:0.5b"
+  provider: ollama
+  temperature: 0.2
+  max_tokens: 2048
+prompt:
+  technique:
+  - zeroshot_l0
+  - progressive_hint_l0
+  - self_hint_l0
+  - hypothesis_testing_l0
+  - progressive_rectification_l0
+  - zeroshot_l1
+  - progressive_hint_l1
+  - self_hint_l1
+  - hypothesis_testing_l1
+  - progressive_rectification_l1
+  - zeroshot_l2
+  - progressive_hint_l2
+  - self_hint_l2
+  - hypothesis_testing_l2
+  - progressive_rectification_l2
+  - zeroshot_l3
+  - progressive_hint_l3
+  - self_hint_l3
+  - hypothesis_testing_l3
+  - progressive_rectification_l3
+  schema_dir: schema
+output:
+  format: csv
+  save_metrics: true
+  save_logs: true

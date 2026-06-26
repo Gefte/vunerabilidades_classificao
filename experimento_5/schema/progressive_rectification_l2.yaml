@@ -1,0 +1,117 @@
+technique: progressive_rectification_l2
+name: "Progressive Rectification Prompting — Nível 2 (Domínio Adaptado)"
+description: >
+  PRP L2: Taxonomia CVSSv3 + contexto do domínio de vulnerabilidades OpenVAS
+  nos prompts, com mascaramento progressivo de keywords. Adiciona conhecimento
+  sobre a natureza dos dados do scanner. Hipótese: ganho adicional moderado sobre L1.
+acronym: "PRP-L2"
+strategy: progressive_rectification
+
+prompt_text: |
+  You are a cybersecurity expert specialized in vulnerability assessment.
+  You are analyzing data from OpenVAS/Greenbone vulnerability scanner reports for Docker containers.
+  Classify the CVSSv3 severity level of the vulnerability described below.
+
+  Vulnerability Scanner Data (OpenVAS/Greenbone):
+  {input_framework}
+
+  Note: The numeric CVSS score is NOT provided — classify based on the textual description only.
+
+  CVSSv3 Severity taxonomy:
+  - Informational: CVSS 0.0 — diagnostic data, open ports, version banners, EOL detections.
+  - Low: CVSS 0.1–3.9 — limited impact, local access or complex conditions required.
+  - Medium: CVSS 4.0–6.9 — moderate impact, partial unauthorized access possible.
+  - High: CVSS 7.0–8.9 — significant impact, remotely exploitable, privilege escalation.
+  - Critical: CVSS 9.0–10.0 — maximum impact, RCE, no authentication required.
+
+  Think step by step:
+  1. Parse the scanner output to identify the vulnerability.
+  2. Assess exploitability and impact from available fields.
+  3. Map to the appropriate CVSSv3 severity level.
+
+  {output_format}
+
+masking_template: |
+  {input_framework}
+  Replace all occurrences of the word '{subcategory}' with 'X' in the text above.
+
+rectification_template: |
+  You are a cybersecurity expert analyzing OpenVAS/Greenbone scanner data for Docker containers.
+  Reclassify the severity of the vulnerability described below.
+
+  Vulnerability Scanner Data:
+  {input_framework}
+
+  Note: The answer is probably NOT one of these categories: {rejected_category}.
+  The CVSS score is NOT provided numerically — use the textual description.
+
+  CVSSv3 Severity taxonomy:
+  - Informational: CVSS 0.0 — diagnostic data, open ports, version banners, EOL detections.
+  - Low: CVSS 0.1–3.9 — limited impact, local access or complex conditions required.
+  - Medium: CVSS 4.0–6.9 — moderate impact, partial unauthorized access possible.
+  - High: CVSS 7.0–8.9 — significant impact, remotely exploitable, privilege escalation.
+  - Critical: CVSS 9.0–10.0 — maximum impact, RCE, no authentication required.
+
+  {output_format}
+
+output_format: |
+  Return your classification strictly in the format below.
+  If classification is not possible, use Unknown.
+
+  Category: [Informational|Low|Medium|High|Critical|Unknown]
+  Explanation: [Concise justification based on the vulnerability characteristics]
+
+key_words:
+  Informational:
+    - open port
+    - service banner
+    - version detected
+    - informational
+    - diagnostic
+    - eol detection
+  Low:
+    - local access required
+    - complex conditions
+    - limited impact
+    - minimal damage
+  Medium:
+    - partial compromise
+    - moderate impact
+    - xss
+    - csrf
+    - information disclosure
+  High:
+    - privilege escalation
+    - data breach
+    - exploitable remotely
+    - authentication bypass
+    - sql injection
+  Critical:
+    - remote code execution
+    - rce
+    - full system compromise
+    - unauthenticated
+  Unknown:
+    - unknown
+    - unspecified
+
+categories:
+  - name: Informational
+    description: CVSS 0.0. OpenVAS diagnostic findings. Not exploitable.
+  - name: Low
+    description: CVSS 0.1–3.9. Limited exploitability. Local access or complex conditions.
+  - name: Medium
+    description: CVSS 4.0–6.9. Moderate risk. Partial access under specific conditions.
+  - name: High
+    description: CVSS 7.0–8.9. Significant risk. Remotely exploitable.
+  - name: Critical
+    description: CVSS 9.0–10.0. Maximum risk. RCE, no authentication required.
+
+params:
+  max_iter: 3
+  quality_threshold: 1.0
+  mode: prp
+
+extraction:
+  method: csv
+  unknown_category: Unknown

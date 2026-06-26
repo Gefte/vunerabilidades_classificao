@@ -1,0 +1,38 @@
+project:
+  name: experimento_4
+  description: >
+    E4 — Priorização Container-Aware (Contribuição Original): classifica a urgência
+    de correção de vulnerabilidades considerando o contexto específico de containers
+    Docker, indo além da severidade genérica do CVSS. A taxonomia proposta (Crítico-Container,
+    Alto-Remediável, Médio-Monitorar, Baixo-Aceitar) é derivada automaticamente de
+    regras sobre CVSS, Solution Type, Port Protocol e QoD.
+  created_at: '2026-05-18T23:13:08.247660'
+  version: 1.0.0
+data:
+  input_columns:
+  - NVT Name
+  - Summary
+  - CVSS
+  - Solution Type
+  - Port Protocol
+  - QoD
+  required_columns:
+  - id
+  - target
+models:
+- name: "qwen:0.5b"
+  provider: ollama
+  temperature: 0.2
+  max_tokens: 2048
+prompt:
+  technique:
+  - zeroshot
+  - progressive_hint
+  - self_hint
+  - hypothesis_testing
+  - progressive_rectification
+  schema_dir: schema
+output:
+  format: csv
+  save_metrics: true
+  save_logs: true
