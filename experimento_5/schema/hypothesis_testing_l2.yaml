@@ -1,0 +1,122 @@
+technique: hypothesis_testing_l2
+name: "Hypothesis Testing Prompting — Nível 2 (Domínio Adaptado)"
+description: >
+  HTP L2: Taxonomia CVSSv3 + contexto do domínio de vulnerabilidades OpenVAS
+  nos prompts, com teste sistemático de hipóteses. Adiciona conhecimento sobre
+  a natureza dos dados do scanner. Hipótese: ganho adicional moderado sobre L1.
+acronym: "HTP-L2"
+strategy: hypothesis_testing
+
+prompt_text: |
+  You are a cybersecurity expert specialized in vulnerability assessment.
+  You are analyzing data from OpenVAS/Greenbone scanner reports for Docker containers.
+
+  Vulnerability Scanner Data (OpenVAS/Greenbone):
+  {input_framework}
+
+  Instructions:
+  For CVSSv3 severity category "{category}" (keywords: {keywords_str}), perform the following steps:
+
+  Note: This data comes from automated OpenVAS scans. The CVSS score is NOT provided numerically.
+  Classify based on the textual fields (NVT Name, Summary, Vulnerability Insight, Impact).
+
+  1. True Hypothesis:
+     - Assume this vulnerability belongs to this CVSSv3 severity level.
+     - Justify based on the scanner description and the provided keywords.
+     - Indicate whether the hypothesis is SUPPORTED or NOT SUPPORTED.
+
+  2. False Hypothesis:
+     - Assume this vulnerability does NOT belong to this CVSSv3 severity level.
+     - Justify based on the lack of evidence or contradictory characteristics.
+     - Indicate whether the hypothesis is SUPPORTED or NOT SUPPORTED.
+
+  Return the hypotheses in the following format:
+      True Hypothesis: [SUPPORTED/NOT SUPPORTED]
+      False Hypothesis: [SUPPORTED/NOT SUPPORTED]
+
+  Final Classification Decision:
+    - If the True Hypothesis is SUPPORTED and the False Hypothesis is NOT SUPPORTED:
+      Category: {category}
+      Explanation: [Justification]
+    - Otherwise:
+      Category: Unknown
+      Explanation: Unknown
+
+  {output_format}
+
+output_format: |
+  Return your classification strictly in the format below.
+  If classification is not possible, use Unknown.
+
+  Category: [Informational|Low|Medium|High|Critical|Unknown]
+  Explanation: [Concise justification based on the vulnerability characteristics]
+
+key_words:
+  Informational:
+    - open port
+    - service banner
+    - version detected
+    - fingerprint
+    - informational
+    - diagnostic
+    - eol detection
+    - port scan
+    - ssl certificate
+  Low:
+    - local access required
+    - complex conditions
+    - limited impact
+    - minimal damage
+    - difficult to exploit
+    - requires authentication
+  Medium:
+    - partial compromise
+    - moderate impact
+    - unauthorized access
+    - xss
+    - csrf
+    - information disclosure
+    - credential exposure
+  High:
+    - privilege escalation
+    - data breach
+    - exploitable remotely
+    - authentication bypass
+    - sql injection
+    - command injection
+  Critical:
+    - remote code execution
+    - rce
+    - full system compromise
+    - no authentication required
+    - unauthenticated
+    - arbitrary code
+  Unknown:
+    - unknown
+    - unspecified
+
+categories:
+  - name: Informational
+    description: >
+      CVSS 0.0. OpenVAS diagnostic findings: open ports, banners, EOL detections.
+  - name: Low
+    description: >
+      CVSS 0.1–3.9. Limited exploitability. Requires local access or complex conditions.
+  - name: Medium
+    description: >
+      CVSS 4.0–6.9. Moderate risk. Partial unauthorized access under specific conditions.
+  - name: High
+    description: >
+      CVSS 7.0–8.9. Significant risk. Remotely exploitable, privilege escalation.
+  - name: Critical
+    description: >
+      CVSS 9.0–10.0. Maximum risk. RCE, no authentication required.
+
+params:
+  max_iter: 5
+  quality_threshold: 1.0
+  mode: htp
+
+extraction:
+  method: csv
+  unknown_category: Unknown

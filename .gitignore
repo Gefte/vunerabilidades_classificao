@@ -216,3 +216,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+infos.txt
+*.pdf
+colunas_base.txt

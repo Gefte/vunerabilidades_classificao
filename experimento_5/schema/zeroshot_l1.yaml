@@ -1,0 +1,57 @@
+technique: zeroshot_l1
+name: "Zero-Shot Learning — Nível 1 (Taxonomia Adaptada)"
+description: >
+  ZSL L1: Prompts do domínio de incidentes com apenas a taxonomia trocada de
+  NIST SP 800-61r3 para CVSSv3 Severity. Mantém estrutura de raciocínio e estilo
+  orientado a incidentes. Hipótese: ganho significativo em relação ao L0 apenas
+  pela correção da taxonomia alvo.
+acronym: "ZSL-L1"
+strategy: zeroshot
+
+prompt_text: |
+  You are a cybersecurity analyst specialized in security incident response.
+  Classify the severity level of the security finding described below.
+
+  Finding Description:
+  {input_framework}
+
+  CVSSv3 Severity taxonomy:
+  - Informational: CVSS 0.0 — no direct exploitable risk; diagnostic data or scan result.
+  - Low: CVSS 0.1–3.9 — minor risk with limited scope and minimal impact.
+  - Medium: CVSS 4.0–6.9 — moderate risk affecting some systems, requiring attention.
+  - High: CVSS 7.0–8.9 — significant risk with major potential impact.
+  - Critical: CVSS 9.0–10.0 — critical risk with catastrophic potential impact.
+
+  Think step by step:
+  1. Identify the type of security event or finding described.
+  2. Assess the scope and potential impact.
+  3. Consider the exploitability and conditions required.
+  4. Map to the appropriate CVSSv3 severity level.
+
+  {output_format}
+
+output_format: |
+  Return your classification strictly in the format below.
+  If classification is not possible, use Unknown.
+
+  Category: [Informational|Low|Medium|High|Critical|Unknown]
+  Explanation: [Concise justification based on the finding characteristics]
+
+categories:
+  - name: Informational
+    description: CVSS 0.0. No direct exploitable risk. Diagnostic or scan data.
+  - name: Low
+    description: CVSS 0.1–3.9. Minor risk with limited scope and minimal impact.
+  - name: Medium
+    description: CVSS 4.0–6.9. Moderate risk requiring attention and intervention.
+  - name: High
+    description: CVSS 7.0–8.9. Significant risk with major potential impact.
+  - name: Critical
+    description: CVSS 9.0–10.0. Critical risk with catastrophic potential impact.
+
+params:
+  mode: zsl
+
+extraction:
+  method: csv
+  unknown_category: Unknown

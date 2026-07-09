@@ -1,0 +1,73 @@
+technique: self_hint
+name: "Self-Hint Prompting — Container-Aware Priority"
+description: >
+  Self-Hint Prompting (SHP) para classificação de Priorização Container-Aware (E4).
+  O modelo elabora um plano de análise antes de aplicar as regras compostas da
+  taxonomia Container-Aware e se auto-refina iterativamente. Testa se auto-reflexão
+  melhora a correta aplicação das regras de priorização em DevSecOps.
+acronym: "SHP"
+strategy: self_hint
+
+prompt_text: |
+  You are a DevSecOps expert specialized in container security and vulnerability prioritization.
+  Classify the remediation urgency of the vulnerability described below in the context of Docker containers.
+
+  Vulnerability Information:
+  {input_framework}
+
+  {plan_instructions}
+
+  Container-Aware Priority taxonomy:
+  - Crítico-Container: CVSS ≥ 9.0 AND Solution Type = WillNotFix AND Port Protocol = tcp.
+    Unpatched critical vulnerability exposed on TCP — immediate isolation required.
+  - Alto-Remediável: CVSS ≥ 7.0 AND Solution Type = VendorFix.
+    High/Critical severity with available patch — prioritize in next sprint.
+  - Médio-Monitorar: CVSS ∈ [4.0, 7.0) OR exploitation requires specific conditions.
+    Medium risk or conditional exploitability — monitor and schedule.
+  - Baixo-Aceitar: CVSS < 4.0 OR QoD < 50.
+    Low risk or low detection confidence — accept or defer.
+
+  Think step by step:
+  1. Extract CVSS score, Solution Type, Port Protocol, and QoD from the input.
+  2. Verify each criterion of the taxonomy rules.
+  3. Apply rules in priority order: Crítico-Container first, then Alto-Remediável, etc.
+  4. Select the highest-priority matching category.
+
+  {output_format}
+
+plan_instructions: >
+  Let's first understand the problem and devise a plan to solve it step by step.
+  Then, let's carry out the plan and solve the problem step by step.
+
+output_format: |
+  Return your classification strictly in the format below.
+  If classification is not possible, use Unknown.
+
+  Category: [Crítico-Container|Alto-Remediável|Médio-Monitorar|Baixo-Aceitar|Unknown]
+  Explanation: [Concise justification referencing CVSS, Solution Type, Port Protocol, and QoD]
+
+categories:
+  - name: Crítico-Container
+    description: >
+      CVSS ≥ 9.0 AND Solution Type = WillNotFix AND Port Protocol = tcp.
+      Unpatched critical vulnerability exposed on TCP in the container network.
+  - name: Alto-Remediável
+    description: >
+      CVSS ≥ 7.0 AND Solution Type = VendorFix.
+      High or critical severity with a vendor-provided patch available.
+  - name: Médio-Monitorar
+    description: >
+      CVSS ∈ [4.0, 7.0) OR exploitation requires specific conditions.
+      Medium risk or conditional exploitability — monitor and schedule.
+  - name: Baixo-Aceitar
+    description: >
+      CVSS < 4.0 OR QoD < 50. Low risk or low detection confidence — accept or defer.
+
+params:
+  max_iter: 3
+  quality_threshold: 1.0
+  mode: shp
+
+extraction:
+  method: csv
+  unknown_category: Unknown

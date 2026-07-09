@@ -1,0 +1,37 @@
+project:
+  name: experimento_1
+  description: 'E1 — Classificação de Severidade CVSS: avalia se o FrameworkPE classifica
+    corretamente a severidade de uma vulnerabilidade a partir de campos textuais (NVT
+    Name, Summary, Vulnerability Insight, Impact), sem usar o score CVSS numérico
+    como entrada. Permite comparação direta com o paper base (ERRC 2025).
+
+    '
+  created_at: '2026-05-18T23:12:27.837965'
+  version: 1.0.0
+  last_applied: '2026-05-19T01:10:35.308973'
+data:
+  input_columns:
+  - NVT Name
+  - Summary
+  - Vulnerability Insight
+  - Impact
+  required_columns:
+  - id
+  - target
+models:
+- name: qwen:0.5b
+  provider: ollama
+  temperature: 0.2
+  max_tokens: 2048
+prompt:
+  technique:
+  - zeroshot
+  - progressive_hint
+  - self_hint
+  - hypothesis_testing
+  - progressive_rectification
+  schema_dir: schema
+output:
+  format: csv
+  save_metrics: true
+  save_logs: true

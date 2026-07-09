@@ -1,0 +1,73 @@
+technique: zeroshot_l2
+name: "Zero-Shot Learning — Nível 2 (Domínio Adaptado)"
+description: >
+  ZSL L2: Taxonomia CVSSv3 + contexto do domínio de vulnerabilidades e scanner
+  OpenVAS/Greenbone nos prompts. Adiciona conhecimento sobre a natureza dos dados
+  (relatório de scanner, campos semi-estruturados) sem redesenhar completamente
+  o prompt. Hipótese: ganho adicional moderado sobre L1.
+acronym: "ZSL-L2"
+strategy: zeroshot
+
+prompt_text: |
+  You are a cybersecurity expert specialized in vulnerability assessment.
+  You are analyzing data from OpenVAS/Greenbone vulnerability scanner reports for Docker containers.
+  Classify the CVSSv3 severity level of the vulnerability described below.
+
+  Vulnerability Scanner Data (OpenVAS/Greenbone):
+  {input_framework}
+
+  Note: This data comes from automated OpenVAS/Greenbone scans of Docker Hub containers.
+  Fields may include NVT Name (test name), Summary (brief description), Vulnerability Insight
+  (technical details), and Impact (potential consequences). The numeric CVSS score is NOT provided
+  — classify based on the textual description only.
+
+  CVSSv3 Severity taxonomy:
+  - Informational: CVSS 0.0 — diagnostic data, open ports, version banners, EOL detections. Not exploitable.
+  - Low: CVSS 0.1–3.9 — limited impact, local access or complex conditions required.
+  - Medium: CVSS 4.0–6.9 — moderate impact, partial unauthorized access possible.
+  - High: CVSS 7.0–8.9 — significant impact, remotely exploitable, privilege escalation.
+  - Critical: CVSS 9.0–10.0 — maximum impact, RCE, no authentication required.
+
+  Think step by step:
+  1. Parse the vulnerability scanner output to identify the vulnerability type.
+  2. Assess exploitability, attack vector, and complexity from the description.
+  3. Evaluate potential impact on confidentiality, integrity, and availability.
+  4. Map to the appropriate CVSSv3 severity level.
+
+  {output_format}
+
+output_format: |
+  Return your classification strictly in the format below.
+  If classification is not possible, use Unknown.
+
+  Category: [Informational|Low|Medium|High|Critical|Unknown]
+  Explanation: [Concise justification based on the vulnerability characteristics]
+
+categories:
+  - name: Informational
+    description: >
+      CVSS 0.0. OpenVAS diagnostic findings: open ports, service banners, version
+      fingerprints, SSL info, EOL detections. Not an exploitable vulnerability.
+  - name: Low
+    description: >
+      CVSS 0.1–3.9. Limited exploitability. Requires local access, physical presence,
+      or complex attack conditions. Minimal damage if exploited.
+  - name: Medium
+    description: >
+      CVSS 4.0–6.9. Moderate risk. May allow partial unauthorized access, XSS, CSRF,
+      credential exposure, or information disclosure under specific conditions.
+  - name: High
+    description: >
+      CVSS 7.0–8.9. Significant risk. Data breach, privilege escalation, authentication
+      bypass, SQL injection. Often exploitable remotely with low complexity.
+  - name: Critical
+    description: >
+      CVSS 9.0–10.0. Maximum risk. Remote code execution, full system compromise,
+      no authentication or user interaction required.
+
+params:
+  mode: zsl
+
+extraction:
+  method: csv
+  unknown_category: Unknown

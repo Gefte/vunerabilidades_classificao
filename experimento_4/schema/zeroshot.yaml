@@ -1,0 +1,70 @@
+technique: zeroshot
+name: "Zero-Shot Learning — Container-Aware Priority"
+description: >
+  Zero-Shot Learning (ZSL) para classificação de Priorização Container-Aware (E4).
+  Classifica a urgência de correção de vulnerabilidades considerando o contexto
+  específico de containers Docker: CVSS, Solution Type, Port Protocol e QoD.
+  Taxonomia derivada por regras, indo além da severidade genérica do CVSS.
+acronym: "ZSL"
+strategy: zeroshot
+
+prompt_text: |
+  You are a DevSecOps expert specialized in container security and vulnerability prioritization.
+  Classify the remediation urgency of the vulnerability described below in the context of Docker containers.
+
+  Vulnerability Information:
+  {input_framework}
+
+  Container-Aware Priority taxonomy:
+  - Crítico-Container: CVSS ≥ 9.0 AND Solution Type = WillNotFix AND Port Protocol = tcp.
+    Unpatched critical vulnerability exposed on TCP — immediate isolation required.
+  - Alto-Remediável: CVSS ≥ 7.0 AND Solution Type = VendorFix.
+    High/Critical severity with an available patch — prioritize patching in the next sprint.
+  - Médio-Monitorar: CVSS ∈ [4.0, 7.0) OR exploitation requires specific conditions.
+    Medium risk or conditional exploitability — monitor and schedule remediation.
+  - Baixo-Aceitar: CVSS < 4.0 OR QoD < 50.
+    Low risk or low detection confidence — accept risk or defer.
+
+  Think step by step:
+  1. Extract the CVSS score from the input (if available).
+  2. Identify the Solution Type (VendorFix, WillNotFix, Workaround, Mitigation).
+  3. Check the Port Protocol (tcp/udp) and QoD value.
+  4. Apply the taxonomy rules in order: Crítico-Container → Alto-Remediável → Médio-Monitorar → Baixo-Aceitar.
+  5. Select the highest-priority matching category.
+
+  {output_format}
+
+output_format: |
+  Return your classification strictly in the format below.
+  If classification is not possible, use Unknown.
+
+  Category: [Crítico-Container|Alto-Remediável|Médio-Monitorar|Baixo-Aceitar|Unknown]
+  Explanation: [Concise justification referencing CVSS, Solution Type, Port Protocol, and QoD]
+
+categories:
+  - name: Crítico-Container
+    description: >
+      CVSS ≥ 9.0 AND Solution Type = WillNotFix AND Port Protocol = tcp.
+      Unpatched critical vulnerability exposed on TCP in the container network.
+      Immediate isolation or container decommission required.
+  - name: Alto-Remediável
+    description: >
+      CVSS ≥ 7.0 AND Solution Type = VendorFix.
+      High or critical severity with a vendor-provided patch available.
+      Prioritize patching in the next development sprint.
+  - name: Médio-Monitorar
+    description: >
+      CVSS ∈ [4.0, 7.0) OR exploitation requires specific conditions.
+      Medium risk or exploitation requiring specific access/conditions.
+      Schedule remediation and monitor container behavior.
+  - name: Baixo-Aceitar
+    description: >
+      CVSS < 4.0 OR QoD < 50 (low detection confidence).
+      Low risk or low scanner confidence. Accept risk or defer to future cycles.
+
+params:
+  mode: zsl
+
+extraction:
+  method: csv
+  unknown_category: Unknown

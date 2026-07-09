@@ -1,0 +1,88 @@
+technique: progressive_hint
+name: "Progressive Hint Prompting — Container-Aware Priority"
+description: >
+  Progressive Hint Prompting (PHP) para classificação de Priorização Container-Aware
+  (E4). Aplica raciocínio iterativo por dicas progressivas para a taxonomia de
+  priorização em containers Docker (CVSS, Solution Type, Port Protocol, QoD).
+  Testa se PHP melhora a aplicação correta de regras compostas de priorização.
+acronym: "PHP"
+strategy: progressive_hint
+
+prompt_text: |
+  You are a DevSecOps expert specialized in container security and vulnerability prioritization.
+  Classify the remediation urgency of the vulnerability described below in the context of Docker containers.
+
+  Vulnerability Information:
+  {input_framework}
+
+  Container-Aware Priority taxonomy:
+  - Crítico-Container: CVSS ≥ 9.0 AND Solution Type = WillNotFix AND Port Protocol = tcp.
+  - Alto-Remediável: CVSS ≥ 7.0 AND Solution Type = VendorFix.
+  - Médio-Monitorar: CVSS ∈ [4.0, 7.0) OR exploitation requires specific conditions.
+  - Baixo-Aceitar: CVSS < 4.0 OR QoD < 50.
+
+  Think step by step:
+  1. Extract the CVSS score from the input (if available).
+  2. Identify the Solution Type (VendorFix, WillNotFix, Workaround, Mitigation).
+  3. Check the Port Protocol (tcp/udp) and QoD value.
+  4. Apply the taxonomy rules: Crítico-Container → Alto-Remediável → Médio-Monitorar → Baixo-Aceitar.
+  5. Select the highest-priority matching category.
+
+  {output_format}
+
+hint_template: |
+  You are a DevSecOps expert specialized in container security and vulnerability prioritization.
+  Classify the remediation urgency of the vulnerability described below in the context of Docker containers.
+
+  Vulnerability Information:
+  {input_framework}
+  (Hint: The priority category is near to {previous_category}.)
+
+  We know the Answer Hints: {previous_category}. With the Answer Hints: {previous_category}, we will answer the question.
+
+  Container-Aware Priority taxonomy:
+  - Crítico-Container: CVSS ≥ 9.0 AND Solution Type = WillNotFix AND Port Protocol = tcp.
+  - Alto-Remediável: CVSS ≥ 7.0 AND Solution Type = VendorFix.
+  - Médio-Monitorar: CVSS ∈ [4.0, 7.0) OR exploitation requires specific conditions.
+  - Baixo-Aceitar: CVSS < 4.0 OR QoD < 50.
+
+  Think step by step:
+  1. Extract the CVSS score, Solution Type, Port Protocol, and QoD.
+  2. Apply the taxonomy rules in order.
+  3. Use the hint as reference, but reason independently from the evidence.
+  4. Select the highest-priority matching category.
+
+  {output_format}
+
+output_format: |
+  Return your classification strictly in the format below.
+  If classification is not possible, use Unknown.
+
+  Category: [Crítico-Container|Alto-Remediável|Médio-Monitorar|Baixo-Aceitar|Unknown]
+  Explanation: [Concise justification referencing CVSS, Solution Type, Port Protocol, and QoD]
+
+categories:
+  - name: Crítico-Container
+    description: >
+      CVSS ≥ 9.0 AND Solution Type = WillNotFix AND Port Protocol = tcp.
+      Unpatched critical vulnerability exposed on TCP in the container network.
+  - name: Alto-Remediável
+    description: >
+      CVSS ≥ 7.0 AND Solution Type = VendorFix.
+      High or critical severity with a vendor-provided patch available.
+  - name: Médio-Monitorar
+    description: >
+      CVSS ∈ [4.0, 7.0) OR exploitation requires specific conditions.
+      Medium risk or conditional exploitability — monitor and schedule.
+  - name: Baixo-Aceitar
+    description: >
+      CVSS < 4.0 OR QoD < 50. Low risk or low detection confidence — accept or defer.
+
+params:
+  max_hints: 3
+  quality_threshold: 1.0
+  mode: php
+
+extraction:
+  method: csv
+  unknown_category: Unknown

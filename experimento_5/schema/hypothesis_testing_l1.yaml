@@ -1,0 +1,106 @@
+technique: hypothesis_testing_l1
+name: "Hypothesis Testing Prompting — Nível 1 (Taxonomia Adaptada)"
+description: >
+  HTP L1: Prompts HTP com taxonomia trocada de NIST SP 800-61r3 para CVSSv3.
+  Mantém teste sistemático de hipóteses e estilo orientado a incidentes.
+  Hipótese: ganho significativo sobre L0 pela correção da taxonomia alvo.
+acronym: "HTP-L1"
+strategy: hypothesis_testing
+
+prompt_text: |
+  You are a cybersecurity analyst specialized in security incident response.
+
+  Finding Description:
+  {input_framework}
+
+  Instructions:
+  For CVSSv3 severity category "{category}" (keywords: {keywords_str}), perform the following steps:
+
+  1. True Hypothesis:
+     - Assume this finding belongs to this CVSSv3 severity level.
+     - Justify based on the description and the provided keywords.
+     - Indicate whether the hypothesis is SUPPORTED or NOT SUPPORTED.
+
+  2. False Hypothesis:
+     - Assume this finding does NOT belong to this severity level.
+     - Justify based on the lack of evidence or contradictory characteristics.
+     - Indicate whether the hypothesis is SUPPORTED or NOT SUPPORTED.
+
+  Return the hypotheses in the following format:
+      True Hypothesis: [SUPPORTED/NOT SUPPORTED]
+      False Hypothesis: [SUPPORTED/NOT SUPPORTED]
+
+  Final Classification Decision:
+    - If the True Hypothesis is SUPPORTED and the False Hypothesis is NOT SUPPORTED:
+      Category: {category}
+      Explanation: [Justification]
+    - Otherwise:
+      Category: Unknown
+      Explanation: Unknown
+
+  {output_format}
+
+output_format: |
+  Return your classification strictly in the format below.
+  If classification is not possible, use Unknown.
+
+  Category: [Informational|Low|Medium|High|Critical|Unknown]
+  Explanation: [Concise justification based on the finding characteristics]
+
+key_words:
+  Informational:
+    - no exploitable risk
+    - diagnostic
+    - scan result
+    - information gathering
+    - no direct threat
+    - banner
+    - version
+  Low:
+    - minor risk
+    - limited scope
+    - minimal impact
+    - requires authentication
+    - local access
+  Medium:
+    - moderate risk
+    - some systems affected
+    - partial access
+    - intervention required
+    - credential exposure
+  High:
+    - significant risk
+    - major impact
+    - data breach
+    - system compromise
+    - remotely exploitable
+  Critical:
+    - critical risk
+    - catastrophic
+    - no authentication required
+    - rce
+    - full compromise
+  Unknown:
+    - unknown
+    - unspecified
+
+categories:
+  - name: Informational
+    description: CVSS 0.0. No direct exploitable risk. Diagnostic or scan data.
+  - name: Low
+    description: CVSS 0.1–3.9. Minor risk with limited scope and minimal impact.
+  - name: Medium
+    description: CVSS 4.0–6.9. Moderate risk requiring attention and intervention.
+  - name: High
+    description: CVSS 7.0–8.9. Significant risk with major potential impact.
+  - name: Critical
+    description: CVSS 9.0–10.0. Critical risk with catastrophic potential impact.
+
+params:
+  max_iter: 5
+  quality_threshold: 1.0
+  mode: htp
+
+extraction:
+  method: csv
+  unknown_category: Unknown

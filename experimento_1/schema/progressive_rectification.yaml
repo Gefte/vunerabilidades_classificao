@@ -1,0 +1,149 @@
+technique: progressive_rectification
+name: "Progressive Rectification Prompting"
+description: >
+  Progressive Rectification Prompting (PRP) para classificação de severidade CVSS
+  de vulnerabilidades em containers Docker (OpenVAS/Greenbone). Mascara progressivamente
+  palavras-chave da categoria escolhida e força reclassificação, quebrando o viés
+  de ancoragem (anchor bias) do modelo na primeira resposta.
+acronym: "PRP"
+strategy: progressive_rectification
+
+prompt_text: |
+  You are a cybersecurity expert specialized in vulnerability assessment for Docker containers.
+  Classify the severity level of the vulnerability described below.
+
+  Vulnerability Information:
+  {input_framework}
+
+  Severity taxonomy (CVSSv3):
+  - Informational: CVSS 0.0 — diagnostic data, open ports, version banners, scanner metadata.
+  - Low: CVSS 0.1–3.9 — limited impact, local access or complex conditions required.
+  - Medium: CVSS 4.0–6.9 — moderate impact, partial unauthorized access possible.
+  - High: CVSS 7.0–8.9 — significant impact, remotely exploitable, privilege escalation.
+  - Critical: CVSS 9.0–10.0 — maximum impact, RCE, no authentication required.
+
+  Think step by step:
+  1. Identify the vulnerability type and its root cause.
+  2. Assess the potential impact on confidentiality, integrity, and availability.
+  3. Consider the attack vector, complexity, and privileges required.
+  4. Map your analysis to the appropriate CVSSv3 severity level.
+
+  {output_format}
+
+masking_template: |
+  {input_framework}
+  Replace all occurrences of the word '{subcategory}' with 'X' in the vulnerability text above.
+  Ensure the substitution preserves the original context and sentence structure.
+
+rectification_template: |
+  You are a cybersecurity expert specialized in vulnerability assessment for Docker containers.
+  Reclassify the severity level of the vulnerability described below.
+
+  Vulnerability Information:
+  {input_framework}
+
+  Note: The answer is probably NOT one of these categories: {rejected_category}.
+  Reconsider your analysis carefully and choose a different severity level if appropriate.
+
+  Severity taxonomy (CVSSv3):
+  - Informational: CVSS 0.0 — diagnostic data, open ports, version banners, scanner metadata.
+  - Low: CVSS 0.1–3.9 — limited impact, local access or complex conditions required.
+  - Medium: CVSS 4.0–6.9 — moderate impact, partial unauthorized access possible.
+  - High: CVSS 7.0–8.9 — significant impact, remotely exploitable, privilege escalation.
+  - Critical: CVSS 9.0–10.0 — maximum impact, RCE, no authentication required.
+
+  Think step by step:
+  1. Identify the vulnerability type and its root cause.
+  2. Assess the potential impact on confidentiality, integrity, and availability.
+  3. Consider the attack vector, complexity, and privileges required.
+  4. Avoid the rejected categories listed above.
+
+  {output_format}
+
+output_format: |
+  Return your classification strictly in the format below.
+  If classification is not possible, use Unknown.
+
+  Category: [Informational|Low|Medium|High|Critical|Unknown]
+  Explanation: [Concise justification based on the vulnerability characteristics]
+
+key_words:
+  Informational:
+    - open port
+    - service banner
+    - version detected
+    - fingerprint
+    - host alive
+    - ssl certificate
+    - informational
+    - diagnostic
+    - metadata
+    - eol detection
+    - port scan
+  Low:
+    - local access required
+    - complex conditions
+    - limited impact
+    - minimal damage
+    - difficult to exploit
+    - requires authentication
+    - user interaction required
+  Medium:
+    - partial compromise
+    - moderate impact
+    - unauthorized access
+    - cross-site scripting
+    - xss
+    - csrf
+    - information disclosure
+    - session hijacking
+  High:
+    - privilege escalation
+    - data breach
+    - service disruption
+    - exploitable remotely
+    - authentication bypass
+    - sql injection
+    - command injection
+  Critical:
+    - remote code execution
+    - rce
+    - full system compromise
+    - no authentication required
+    - unauthenticated
+    - arbitrary code
+    - zero-day
+  Unknown:
+    - unknown
+    - unspecified
+
+categories:
+  - name: Informational
+    description: >
+      CVSS 0.0. Diagnostic data collected during scanning: open ports, service banners,
+      version fingerprints, SSL certificate info, EOL detections. Not an exploitable vulnerability.
+  - name: Low
+    description: >
+      CVSS 0.1–3.9. Limited impact. Exploitation requires local access, physical presence,
+      or highly complex conditions. Minimal damage potential.
+  - name: Medium
+    description: >
+      CVSS 4.0–6.9. Moderate impact. May allow partial unauthorized access, credential
+      exposure, XSS, CSRF, or information disclosure under specific conditions.
+  - name: High
+    description: >
+      CVSS 7.0–8.9. Significant impact. Data breach, privilege escalation, authentication
+      bypass, SQL injection, or major service disruption. Often remotely exploitable.
+  - name: Critical
+    description: >
+      CVSS 9.0–10.0. Maximum impact. Remote code execution, full system compromise,
+      unauthenticated exploitation, arbitrary code execution with no user interaction.
+
+params:
+  max_iter: 3
+  quality_threshold: 1.0
+  mode: prp
+
+extraction:
+  method: csv
+  unknown_category: Unknown

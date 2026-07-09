@@ -1,0 +1,152 @@
+technique: hypothesis_testing
+name: "Hypothesis Testing Prompting — Ablation"
+description: >
+  Hypothesis Testing Prompting (HTP) para o experimento de Ablation de Configurações
+  de Input (E3). Mesma task do E1 (Severidade CVSS), com teste sistemático de
+  hipóteses. Revelará se HTP é mais ou menos robusto à escassez de input em
+  comparação com PHP e SHP.
+acronym: "HTP"
+strategy: hypothesis_testing
+
+prompt_text: |
+  You are a cybersecurity expert specialized in vulnerability assessment for Docker containers.
+
+  Vulnerability Information:
+  {input_framework}
+
+  Instructions:
+  For severity category "{category}" (keywords: {keywords_str}), perform the following steps:
+
+  Note: Base your analysis only on the information provided above, even if limited.
+
+  1. True Hypothesis:
+     - Assume the vulnerability belongs to this severity level.
+     - Justify based on the available description and the provided keywords.
+     - Indicate whether the hypothesis is SUPPORTED or NOT SUPPORTED.
+
+  2. False Hypothesis:
+     - Assume the vulnerability does NOT belong to this severity level.
+     - Justify based on the lack of evidence or contradictory characteristics.
+     - Indicate whether the hypothesis is SUPPORTED or NOT SUPPORTED.
+
+  Return the hypotheses in the following format:
+      True Hypothesis: [SUPPORTED/NOT SUPPORTED]
+      False Hypothesis: [SUPPORTED/NOT SUPPORTED]
+
+  Final Classification Decision:
+    - If the True Hypothesis is SUPPORTED and the False Hypothesis is NOT SUPPORTED, return:
+      Category: {category}
+      Explanation: [Justification for the chosen severity level]
+    - Otherwise, return UNKNOWN:
+      Category: Unknown
+      Explanation: Unknown
+
+  {output_format}
+
+output_format: |
+  Return your classification strictly in the format below.
+  If classification is not possible, use Unknown.
+
+  Category: [Informational|Low|Medium|High|Critical|Unknown]
+  Explanation: [Concise justification based on the available vulnerability information]
+
+key_words:
+  Informational:
+    - open port
+    - service banner
+    - version detected
+    - fingerprint
+    - host alive
+    - ssl certificate
+    - informational
+    - diagnostic
+    - metadata
+    - scan result
+    - end of life
+    - eol detection
+    - software version
+    - port scan
+    - banner grabbing
+  Low:
+    - local access required
+    - complex conditions
+    - limited impact
+    - low risk
+    - minimal damage
+    - difficult to exploit
+    - requires authentication
+    - user interaction required
+    - physical access
+    - low cvss
+  Medium:
+    - partial compromise
+    - moderate impact
+    - unauthorized access
+    - some conditions
+    - credential exposure
+    - cross-site scripting
+    - xss
+    - csrf
+    - information disclosure
+    - medium cvss
+    - requires privileges
+    - session hijacking
+  High:
+    - privilege escalation
+    - data breach
+    - service disruption
+    - exploitable remotely
+    - minimal privileges
+    - significant impact
+    - authentication bypass
+    - sql injection
+    - high cvss
+    - remote exploit
+    - command injection
+  Critical:
+    - remote code execution
+    - rce
+    - full system compromise
+    - no authentication required
+    - no user interaction
+    - maximum impact
+    - unauthenticated
+    - arbitrary code
+    - complete compromise
+    - critical cvss
+    - zero-day
+  Unknown:
+    - unknown
+    - unspecified
+    - not categorized
+
+categories:
+  - name: Informational
+    description: >
+      CVSS 0.0. Diagnostic data: open ports, service banners, version fingerprints,
+      SSL certificate info, EOL detections. Not an exploitable vulnerability.
+  - name: Low
+    description: >
+      CVSS 0.1–3.9. Limited impact. Requires local access, physical presence, or
+      highly complex conditions. Minimal damage potential.
+  - name: Medium
+    description: >
+      CVSS 4.0–6.9. Moderate impact. Partial unauthorized access, credential exposure,
+      XSS, CSRF, or information disclosure under specific conditions.
+  - name: High
+    description: >
+      CVSS 7.0–8.9. Significant impact. Data breach, privilege escalation, authentication
+      bypass, SQL injection, or major disruption. Often remotely exploitable.
+  - name: Critical
+    description: >
+      CVSS 9.0–10.0. Maximum impact. RCE, full system compromise, unauthenticated
+      exploitation, arbitrary code execution with no user interaction.
+
+params:
+  max_iter: 5
+  quality_threshold: 1.0
+  mode: htp
+
+extraction:
+  method: csv
+  unknown_category: Unknown

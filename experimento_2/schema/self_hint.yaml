@@ -1,0 +1,71 @@
+technique: self_hint
+name: "Self-Hint Prompting"
+description: >
+  Self-Hint Prompting (SHP) para classificação do Tipo de Solução de vulnerabilidades
+  em containers Docker. O modelo elabora um plano de análise antes de responder e
+  se auto-refina iterativamente. Testa se auto-reflexão melhora decisões de triagem
+  de remediação em DevSecOps pipelines.
+acronym: "SHP"
+strategy: self_hint
+
+prompt_text: |
+  You are a cybersecurity expert specialized in vulnerability remediation for Docker containers.
+  Classify the remediation action required for the vulnerability described below.
+
+  Vulnerability Information:
+  {input_framework}
+
+  {plan_instructions}
+
+  Remediation taxonomy (OpenVAS Solution Types):
+  - VendorFix: A patch or update from the vendor is available.
+  - WillNotFix: The vendor will not release a fix (EOL, deprecated, accepted risk).
+  - Workaround: No patch, but a configuration or architectural workaround is available.
+  - Mitigation: Partial mitigation only (WAF, network controls, monitoring).
+
+  Think step by step:
+  1. Understand the vulnerability type and the affected software/component.
+  2. Analyze the solution field to determine if a vendor patch is available.
+  3. Assess EOL/deprecated status and vendor response.
+  4. Determine if a workaround or mitigation is applicable when no patch exists.
+  5. Map to the most appropriate remediation type.
+
+  {output_format}
+
+plan_instructions: >
+  Let's first understand the problem and devise a plan to solve it step by step.
+  Then, let's carry out the plan and solve the problem step by step.
+
+output_format: |
+  Return your classification strictly in the format below.
+  If classification is not possible, use Unknown.
+
+  Category: [VendorFix|WillNotFix|Workaround|Mitigation|Unknown]
+  Explanation: [Concise justification based on the vulnerability and solution characteristics]
+
+categories:
+  - name: VendorFix
+    description: >
+      An official patch, update, or new version from the vendor is available and resolves
+      the vulnerability. The remediation action is to apply the vendor-provided fix.
+  - name: WillNotFix
+    description: >
+      The vendor will not release a fix. Common reasons: software reached end-of-life,
+      component is deprecated, risk is accepted by policy, or vendor does not acknowledge.
+  - name: Workaround
+    description: >
+      No official patch exists, but a workaround is available that reduces the risk.
+      Examples: disabling a feature, configuration changes, using an alternative component.
+  - name: Mitigation
+    description: >
+      Partial mitigation is possible without fully eliminating the vulnerability.
+      Examples: network segmentation, WAF rules, access controls, enhanced monitoring.
+
+params:
+  max_iter: 3
+  quality_threshold: 1.0
+  mode: shp
+
+extraction:
+  method: csv
+  unknown_category: Unknown

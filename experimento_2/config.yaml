@@ -1,0 +1,35 @@
+project:
+  name: experimento_2
+  description: >
+    E2 — Classificação do Tipo de Solução (Triagem de Remediação): classifica
+    automaticamente a ação de remediação necessária (VendorFix, WillNotFix,
+    Workaround, Mitigation) para apoiar decisões de priorização em pipelines
+    DevSecOps. Input: NVT Name + Summary + Solution + Affected Software/OS.
+  created_at: '2026-05-18T23:12:56.636541'
+  version: 1.0.0
+data:
+  input_columns:
+  - NVT Name
+  - Summary
+  - Solution
+  - Affected Software/OS
+  required_columns:
+  - id
+  - target
+models:
+- name: "qwen:0.5b"
+  provider: ollama
+  temperature: 0.2
+  max_tokens: 2048
+prompt:
+  technique:
+  - zeroshot
+  - progressive_hint
+  - self_hint
+  - hypothesis_testing
+  - progressive_rectification
+  schema_dir: schema
+output:
+  format: csv
+  save_metrics: true
+  save_logs: true
