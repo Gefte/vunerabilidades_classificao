@@ -22,14 +22,14 @@ PHP e SHP pela natureza incremental da construção de contexto.
 
 ## Detalhes
 
-| Parâmetro    | Valor |
-|--------------|-------|
+| Parâmetro   | Valor                                                                       |
+| ------------ | --------------------------------------------------------------------------- |
 | Tarefa       | Classificação multiclasse: Informational / Low / Medium / High / Critical |
-| Input        | NVT Name + Summary + Vulnerability Insight + Impact (sem CVSS numérico) |
-| Ground truth | Campo `Severity` do CSV (derivado automaticamente do CVSS pelo scanner) |
-| Técnicas     | ZSL, PHP, SHP, HTP, PRP (todas as 5) |
-| Modelo       | `qwen:0.5b` via Ollama (local) |
-| Métricas     | Accuracy, Precision, Recall, F1-macro, F1-weighted |
+| Input        | NVT Name + Summary + Vulnerability Insight + Impact (sem CVSS numérico)    |
+| Ground truth | Campo`Severity` do CSV (derivado automaticamente do CVSS pelo scanner)    |
+| Técnicas    | ZSL, PHP, SHP, HTP, PRP (todas as 5)                                        |
+| Modelo       | `qwen:0.5b` via Ollama (local)                                            |
+| Métricas    | Accuracy, Precision, Recall, F1-macro, F1-weighted                          |
 
 ## Dataset
 
@@ -40,23 +40,23 @@ PHP e SHP pela natureza incremental da construção de contexto.
 
 ## Técnicas de Prompt
 
-| Sigla | Nome | Estratégia |
-|-------|------|-----------|
-| ZSL | Zero-Shot Learning | Classificação direta sem exemplos — linha de base |
-| PHP | Progressive Hint Prompting | Itera com respostas anteriores como dicas até convergir |
-| SHP | Self-Hint Prompting | Auto-reflexão iterativa antes de responder |
-| HTP | Hypothesis Testing Prompting | Testa H_true/H_false para cada categoria por palavras-chave |
-| PRP | Progressive Rectification Prompting | Mascara keywords e força reclassificação (quebra anchor bias) |
+| Sigla | Nome                                | Estratégia                                                      |
+| ----- | ----------------------------------- | ---------------------------------------------------------------- |
+| ZSL   | Zero-Shot Learning                  | Classificação direta sem exemplos — linha de base             |
+| PHP   | Progressive Hint Prompting          | Itera com respostas anteriores como dicas até convergir         |
+| SHP   | Self-Hint Prompting                 | Auto-reflexão iterativa antes de responder                      |
+| HTP   | Hypothesis Testing Prompting        | Testa H_true/H_false para cada categoria por palavras-chave      |
+| PRP   | Progressive Rectification Prompting | Mascara keywords e força reclassificação (quebra anchor bias) |
 
 ## Taxonomia de Severidade (CVSSv3)
 
-| Categoria | CVSS | Descrição |
-|-----------|------|-----------|
-| Informational | 0.0 | Dados de diagnóstico do scanner: portas abertas, banners, versões detectadas, EOL |
-| Low | 0.1–3.9 | Impacto limitado, requer acesso local ou condições complexas |
-| Medium | 4.0–6.9 | Impacto moderado, pode permitir acesso parcial não autorizado |
-| High | 7.0–8.9 | Impacto significativo — data breach, privilege escalation, exploração remota |
-| Critical | 9.0–10.0 | Impacto máximo — RCE, comprometimento total sem autenticação |
+| Categoria     | CVSS      | Descrição                                                                         |
+| ------------- | --------- | ----------------------------------------------------------------------------------- |
+| Informational | 0.0       | Dados de diagnóstico do scanner: portas abertas, banners, versões detectadas, EOL |
+| Low           | 0.1–3.9  | Impacto limitado, requer acesso local ou condições complexas                      |
+| Medium        | 4.0–6.9  | Impacto moderado, pode permitir acesso parcial não autorizado                      |
+| High          | 7.0–8.9  | Impacto significativo — data breach, privilege escalation, exploração remota     |
+| Critical      | 9.0–10.0 | Impacto máximo — RCE, comprometimento total sem autenticação                    |
 
 ## Estrutura
 

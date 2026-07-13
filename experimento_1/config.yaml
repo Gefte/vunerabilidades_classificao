@@ -1,36 +1,169 @@
 project:
   name: experimento_1
-  description: 'E1 — Classificação de Severidade CVSS: avalia se o FrameworkPE classifica
-    corretamente a severidade de uma vulnerabilidade a partir de campos textuais (NVT
-    Name, Summary, Vulnerability Insight, Impact), sem usar o score CVSS numérico
-    como entrada. Permite comparação direta com o paper base (ERRC 2025).
-
-    '
+  description: |
+    E1 — Classificação de Severidade CVSS: avalia se o FrameworkPE classifica
+    corretamente a severidade de uma vulnerabilidade a partir de campos textuais
+    (NVT Name, Summary, Vulnerability Insight, Impact), sem usar o score CVSS
+    numérico como entrada. Permite comparação direta com o paper base (ERRC 2025).
   created_at: '2026-05-18T23:12:27.837965'
   version: 1.0.0
   last_applied: '2026-05-19T01:10:35.308973'
+
 data:
   input_columns:
-  - NVT Name
-  - Summary
-  - Vulnerability Insight
-  - Impact
+    - NVT Name
+    - Summary
+    - Vulnerability Insight
+    - Impact
   required_columns:
-  - id
-  - target
+    - id
+    - target
+
 models:
-- name: qwen:0.5b
-  provider: ollama
-  temperature: 0.2
-  max_tokens: 2048
+  - name: mistral:7b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: falcon3:7b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: falcon3:10b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: gpt-oss:20b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: phi4:14b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: phi3:14b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: phi3:3.8b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: deepseek-r1:8b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: deepseek-r1:70b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: cogito:70b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: cogito:8b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: gemma3:27b-it-qat
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: gemma3:12b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: gemma2:9b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: gemma2:27b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: granite3.2:8b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: huihui_ai/foundation-sec-abliterated:8b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: llama3.1:8b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: llama3.1:70b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: llama3.3:70b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: mistral-small:24b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: qwen2.5:7b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: qwen2.5:32b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: qwen3:8b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: qwen3:32b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: smollm2:1.7b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
+  - name: tinyllama:1.1b
+    provider: ollama
+    temperature: 0.2
+    max_tokens: 2000
+
 prompt:
   technique:
-  - zeroshot
-  - progressive_hint
-  - self_hint
-  - hypothesis_testing
-  - progressive_rectification
+    - zeroshot
+    - progressive_hint
+    - self_hint
+    - hypothesis_testing
+    - progressive_rectification
   schema_dir: schema
+
 output:
   format: csv
   save_metrics: true
