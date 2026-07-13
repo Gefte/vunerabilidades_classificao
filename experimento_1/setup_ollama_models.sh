@@ -3,7 +3,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-VENV_PG="${PROJECT_ROOT}/venv/bin/pg"
+VENV_DIR="${PROJECT_ROOT}/venv"
+VENV_PG="${VENV_DIR}/bin/pg"
+VENV_PIP="${VENV_DIR}/bin/pip"
+VENV_PYTHON="${VENV_DIR}/bin/python"
 
 OLLAMA_BASE_URL="${OLLAMA_BASE_URL:-http://localhost:11434}"
 OLLAMA_CONTAINER="ollama"
@@ -171,6 +174,28 @@ run_experiment() {
   return $exit_code
 }
 
+ensure_venv() {
+  if [ ! -d "${VENV_DIR}" ]; then
+    log_info "Criando ambiente virtual em ${VENV_DIR}..."
+    python3 -m venv "${VENV_DIR}"
+    log_success "Ambiente virtual criado"
+  fi
+
+  if [ ! -f "${VENV_PG}" ]; then
+    log_info "Instalando pangolin (FrameworkPE)..."
+    "${VENV_PIP}" install --upgrade pip -q
+    "${VENV_PIP}" install "git+https://github.com/AILabs4All/FrameworkPE.git@cli"
+    log_success "pangolin instalado"
+  fi
+
+  log_info "Verificando instalacao do pg..."
+  if ! "${VENV_PG}" --help >/dev/null 2>&1; then
+    log_error "pg nao foi instalado corretamente"
+    exit 1
+  fi
+  log_success "pg esta instalado e funcional"
+}
+
 push_to_branch() {
   local branch
   branch=$(git rev-parse --abbrev-ref HEAD)
@@ -193,6 +218,7 @@ main() {
   log_info "Tecnicas: ${TECHNIQUES[*]}"
   log_info "Total de modelos: ${#MODELS[@]}"
 
+  ensure_venv
   ensure_docker
   start_ollama_container
   wait_for_ollama
