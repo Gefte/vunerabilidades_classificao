@@ -10,32 +10,34 @@ VENV_PYTHON="${VENV_DIR}/bin/python"
 
 OLLAMA_BASE_URL="${OLLAMA_BASE_URL:-http://localhost:11434}"
 OLLAMA_CONTAINER="ollama"
+OLLAMA_VIA_DOCKER=0
+OLLAMA_PID=""
 MODELS=(
   "mistral:7b"
   "falcon3:7b"
-  "falcon3:10b"
-  "gpt-oss:20b"
-  "phi4:14b"
-  "phi3:14b"
+#  "falcon3:10b"
+#  "gpt-oss:20b"
+#  "phi4:14b"
+#  "phi3:14b"
   "phi3:3.8b"
   "deepseek-r1:8b"
-  "deepseek-r1:70b"
-  "cogito:70b"
+#  "deepseek-r1:70b"
+#  "cogito:70b"
   "cogito:8b"
-  "gemma3:27b-it-qat"
+#  "gemma3:27b-it-qat"
   "gemma3:12b"
   "gemma2:9b"
-  "gemma2:27b"
+#  "gemma2:27b"
   "granite3.2:8b"
   "huihui_ai/foundation-sec-abliterated:8b"
   "llama3.1:8b"
-  "llama3.1:70b"
-  "llama3.3:70b"
-  "mistral-small:24b"
+#  "llama3.1:70b"
+#  "llama3.3:70b"
+#  "mistral-small:24b"
   "qwen2.5:7b"
-  "qwen2.5:32b"
+#  "qwen2.5:32b"
   "qwen3:8b"
-  "qwen3:32b"
+#  "qwen3:32b"
   "smollm2:1.7b"
   "tinyllama:1.1b"
 )
@@ -88,21 +90,27 @@ ensure_docker() {
   fi
   if ! docker info &>/dev/null; then
     log_info "Iniciando servico Docker..."
-    sudo systemctl start docker
+    sudo systemctl start docker 2>/dev/null || true
     sleep 2
   fi
-  log_success "Docker esta rodando"
+  if docker info &>/dev/null; then
+    log_success "Docker esta rodando"
+    return 0
+  fi
+  log_warning "Docker nao esta funcional neste ambiente"
+  return 1
 }
 
-start_ollama_container() {
+try_start_ollama_docker() {
   if docker ps -a --format '{{.Names}}' | grep -q "^${OLLAMA_CONTAINER}$"; then
     if docker ps --format '{{.Names}}' | grep -q "^${OLLAMA_CONTAINER}$"; then
       log_info "Container ${OLLAMA_CONTAINER} ja esta rodando"
       return 0
     fi
     log_info "Container ${OLLAMA_CONTAINER} existe mas esta parado. Iniciando..."
-    docker start "${OLLAMA_CONTAINER}"
-    return 0
+    docker start "${OLLAMA_CONTAINER}" && return 0
+    log_warning "Falha ao iniciar container existente, recriando..."
+    docker rm -f "${OLLAMA_CONTAINER}" 2>/dev/null || true
   fi
 
   log_info "Baixando imagem do Ollama e iniciando container..."
@@ -110,8 +118,56 @@ start_ollama_container() {
     -v ollama:/root/.ollama \
     -p 11434:11434 \
     --name "${OLLAMA_CONTAINER}" \
-    ollama/ollama
-  log_success "Container ${OLLAMA_CONTAINER} criado e iniciado"
+    ollama/ollama 2>&1
+}
+
+start_ollama_native() {
+  if ! command -v ollama &>/dev/null; then
+    log_info "Instalando Ollama nativamente..."
+    if command -v apt-get &>/dev/null; then
+      sudo apt-get install -y -qq zstd
+    elif command -v dnf &>/dev/null; then
+      sudo dnf install -y zstd
+    elif command -v yum &>/dev/null; then
+      sudo yum install -y zstd
+    fi
+    curl -fsSL https://ollama.ai/install.sh | sh
+    log_success "Ollama instalado"
+  fi
+
+  if pgrep -x ollama >/dev/null 2>&1; then
+    log_info "Ollama ja esta rodando nativamente"
+    return 0
+  fi
+
+  log_info "Iniciando Ollama em background..."
+  ollama serve >/dev/null 2>&1 &
+  OLLAMA_PID=$!
+  sleep 2
+}
+
+start_ollama() {
+  if ensure_docker; then
+    log_info "Tentando iniciar Ollama via Docker..."
+    if try_start_ollama_docker; then
+      OLLAMA_VIA_DOCKER=1
+      log_success "Ollama iniciado via Docker"
+      return 0
+    fi
+    log_warning "Docker falhou ao iniciar Ollama, tentando nativo..."
+  fi
+
+  start_ollama_native
+  OLLAMA_VIA_DOCKER=0
+  log_success "Ollama iniciado nativamente"
+}
+
+cleanup_ollama() {
+  if [ "${OLLAMA_VIA_DOCKER}" -eq 1 ]; then
+    docker stop "${OLLAMA_CONTAINER}" 2>/dev/null || true
+  elif [ -n "${OLLAMA_PID}" ]; then
+    kill "${OLLAMA_PID}" 2>/dev/null || true
+  fi
 }
 
 wait_for_ollama() {
@@ -138,14 +194,22 @@ model_exists() {
 pull_model() {
   local model_name="$1"
   log_info "Baixando modelo: ${model_name}"
-  docker exec "${OLLAMA_CONTAINER}" ollama pull "${model_name}"
+  if [ "${OLLAMA_VIA_DOCKER}" -eq 1 ]; then
+    docker exec "${OLLAMA_CONTAINER}" ollama pull "${model_name}"
+  else
+    ollama pull "${model_name}"
+  fi
   log_success "Modelo ${model_name} baixado"
 }
 
 remove_model() {
   local model_name="$1"
   log_info "Removendo modelo: ${model_name}"
-  docker exec "${OLLAMA_CONTAINER}" ollama rm "${model_name}" || true
+  if [ "${OLLAMA_VIA_DOCKER}" -eq 1 ]; then
+    docker exec "${OLLAMA_CONTAINER}" ollama rm "${model_name}" || true
+  else
+    ollama rm "${model_name}" || true
+  fi
 }
 
 run_experiment() {
@@ -157,13 +221,16 @@ run_experiment() {
   mkdir -p "${SCRIPT_DIR}/logs"
 
   log_info "Executando experimento: modelo=${model_name} tecnica=${technique}"
-  "${VENV_PG}" run \
-    --model "${model_name}" \
-    --technique "${technique}" \
-    --max_tokens 2000 \
-    --temperature 0.2 \
-    --output csv \
-    >"${logfile}" 2>&1
+  (
+    cd "${SCRIPT_DIR}"
+    "${VENV_PG}" run \
+      --model "${model_name}" \
+      --technique "${technique}" \
+      --max-tokens 2000 \
+      --temperature 0.2 \
+      --output csv \
+      >"${logfile}" 2>&1
+  )
 
   local exit_code=$?
   if [ $exit_code -eq 0 ]; then
@@ -175,8 +242,9 @@ run_experiment() {
 }
 
 ensure_venv() {
-  if [ ! -d "${VENV_DIR}" ]; then
+  if [ ! -f "${VENV_DIR}/bin/python" ]; then
     log_info "Criando ambiente virtual em ${VENV_DIR}..."
+    rm -rf "${VENV_DIR}"
     python3 -m venv "${VENV_DIR}"
     log_success "Ambiente virtual criado"
   fi
@@ -218,9 +286,10 @@ main() {
   log_info "Tecnicas: ${TECHNIQUES[*]}"
   log_info "Total de modelos: ${#MODELS[@]}"
 
+  trap cleanup_ollama EXIT
+
   ensure_venv
-  ensure_docker
-  start_ollama_container
+  start_ollama
   wait_for_ollama
 
   local total_models=${#MODELS[@]}
