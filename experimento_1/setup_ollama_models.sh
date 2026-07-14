@@ -13,10 +13,10 @@ OLLAMA_CONTAINER="ollama"
 OLLAMA_VIA_DOCKER=0
 OLLAMA_PID=""
 MODELS=(
-  "mistral:7b"
-  "falcon3:7b"
+#  "mistral:7b"
+ # "falcon3:7b"
 #  "falcon3:10b"
-#  "gpt-oss:20b"
+  "gpt-oss:20b"
 #  "phi4:14b"
 #  "phi3:14b"
   "phi3:3.8b"
